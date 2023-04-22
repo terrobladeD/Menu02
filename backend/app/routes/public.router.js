@@ -1,11 +1,14 @@
-const router = require("express").Router();
-// retrive all wanted controllers
+
+const dishes = require("../controllers/dish.controller.js");
+const order = require("../controllers/order.controller.js");
+
+var router = require("express").Router();
 
 // //get the valid dishes form a store
-// router.get('/dish',);
+router.get('/dish', dishes.findValidDishesFromStore);
 
 // //add the order of a dish
-// router.post('/order',);
+router.post('/order',order.createOrder);
  
 
 

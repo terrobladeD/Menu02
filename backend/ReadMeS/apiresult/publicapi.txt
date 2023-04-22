@@ -1,0 +1,120 @@
+////////////////////////////////////////////////////
+get: http://localhost:8080/api/dish?store_id=store1
+reply:
+[
+    {
+        "id": 1,
+        "name": "Pizza",
+        "short_name": "PZ",
+        "description": "Cheese Pizza",
+        "full_description": "Delicious cheese pizza",
+        "price_ori": 10,
+        "price_cur": 10,
+        "is_instock": true,
+        "is_valid": true,
+        "pict_url": "https://example.com/pizza.jpg",
+        "tags": 1,
+        "createdAt": "2023-04-21T11:34:49.000Z",
+        "updatedAt": "2023-04-21T11:34:49.000Z",
+        "storeId": "store1",
+        "dishtypeId": 1,
+        "customises": [
+            {
+                "id": 1,
+                "meta_name": "Toppings",
+                "meta_seq": "1",
+                "meta_min_tk": 1,
+                "meta_max_tk": 1,
+                "name": "Chocolate",
+                "price": 1,
+                "createdAt": "2023-04-21T11:34:49.000Z",
+                "updatedAt": "2023-04-21T11:34:49.000Z",
+                "dishId": 1
+            },
+            {
+                "id": 2,
+                "meta_name": "Toppings",
+                "meta_seq": "1",
+                "meta_min_tk": 1,
+                "meta_max_tk": 1,
+                "name": "Cream",
+                "price": 1,
+                "createdAt": "2023-04-21T11:34:49.000Z",
+                "updatedAt": "2023-04-21T11:34:49.000Z",
+                "dishId": 1
+            }
+        ]
+    },
+    {
+        "id": 2,
+        "name": "Pasta",
+        "short_name": "PA",
+        "description": "Pasta with sauce",
+        "full_description": "Tasty pasta with tomato sauce",
+        "price_ori": 8,
+        "price_cur": 8,
+        "is_instock": true,
+        "is_valid": true,
+        "pict_url": "https://example.com/pasta.jpg",
+        "tags": 1,
+        "createdAt": "2023-04-21T11:34:49.000Z",
+        "updatedAt": "2023-04-21T11:34:49.000Z",
+        "storeId": "store1",
+        "dishtypeId": 1,
+        "customises": []
+    },
+    {
+        "id": 3,
+        "name": "Ice Cream",
+        "short_name": "IC",
+        "description": "Vanilla ice cream",
+        "full_description": "Smooth and creamy vanilla ice cream",
+        "price_ori": 5,
+        "price_cur": 5,
+        "is_instock": true,
+        "is_valid": true,
+        "pict_url": "https://example.com/icecream.jpg",
+        "tags": 1,
+        "createdAt": "2023-04-21T11:34:49.000Z",
+        "updatedAt": "2023-04-21T11:34:49.000Z",
+        "storeId": "store1",
+        "dishtypeId": 2,
+        "customises": []
+    }
+]
+
+//////////////////////////////////////////////////////////
+post: http://localhost:8080/api/order?store_id=store1
+payload:
+{
+    "total_price": 34.98,
+    "table_num": "111",
+    "transaction_fee":1.98,
+    "email": "test@example.com",
+    "additional_info": "123",
+    "details": [
+        {
+            "quantity": 1,
+            "dishId": 1,
+            "customises": [1,2],
+            "sub_price": 12
+        },
+        {
+            "quantity": 2,
+            "dishId": 2,
+            "customises": [],
+            "sub_price": 16
+        },
+        {
+            "quantity": 1,
+            "dishId": 3,
+            "customises": [],
+            "sub_price": 5
+        }
+    ]
+}
+reply:
+{
+    "orderId": 8,
+    "message": "Order successfully created"
+}
