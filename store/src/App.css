@@ -1,0 +1,34 @@
+.container,
+.container-fluid,
+.container-lg,
+.container-md,
+.container-sm,
+.container-xl,
+.container-xxl {
+  --bs-gutter-x: 0;
+  --bs-gutter-y: 0;
+  padding-right: 0;
+  padding-left: 0;
+}
+
+.row {
+  padding-right: 1px;
+  padding-left: 1px;
+  --bs-gutter-x:0;
+
+}
+
+.no-padding-row{
+  padding-right:1px;
+  padding-left: 1px;
+  margin-top: 0;
+}
+
+.card-body{
+  padding:8px;
+}
+
+.dish-detail-div{
+  margin: 8px 0 8px 0;
+}
+

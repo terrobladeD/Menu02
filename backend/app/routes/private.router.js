@@ -1,5 +1,6 @@
 const dishes = require("../controllers/dishes.controller.js");
 const orders = require("../controllers/orders.controller.js");
+const dishtypes = require("../controllers/dishtypes.controller.js");
 const router = require("express").Router();
 const { authenticateJWT } = require('./JWT.router.js');
 
@@ -39,6 +40,13 @@ router.get("/order/:id", authenticateJWT, orders.getOrderById);
 // Make a order finished
 router.put("/order/status/:id", authenticateJWT, orders.updateOrderStatus);
 
+//update a dishtype form a store
+router.put('/dishtype/:id', authenticateJWT, dishtypes.updateDishType);
 
+//add a dishtype form a store
+router.post('/dishtype', authenticateJWT, dishtypes.addDishType);
+
+//delete a dishtype form a store
+router.delete('/dishtype/:id', authenticateJWT, dishtypes.deleteDishType);
 
 module.exports = router;
