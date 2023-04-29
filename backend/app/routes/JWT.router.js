@@ -3,6 +3,10 @@ const bcrypt = require('bcrypt');
 const dotenv = require('dotenv');
 dotenv.config();
 
+const db = require("../models");
+const stores = db.stores;
+
+
 function authenticateJWT(req, res, next) {
     const token = req.headers.authorization;
 
@@ -25,24 +29,22 @@ module.exports = {
     configureRoutes: app => {
         var router = require("express").Router();
 
-        const users = [
-            { 'username': "123456", "password": "$2b$10$KHiyRA36cLTKOZdQ5uvquui7e6EM5PMQB5gXpcnFh4dFWJOqQ5Nj6" }//pwd:123456
-        ];
-
         app.post('/login', async (req, res) => {
-            const { username, password } = req.body;
-            const user = users.find((user) => user.username === username);
+            const { email, password } = req.body;
+            const user = await stores.findOne({ where: { email } });
 
             if (!user) {
                 return res.sendStatus(403);
             }
 
             const isPasswordValid = await bcrypt.compare(password, user.password);
+            console.log(await bcrypt.hash(password, 10));
+            //for store1password and store2password
             if (!isPasswordValid) {
                 return res.sendStatus(401);
             }
 
-            const token = jwt.sign({ username: user.username }, process.env.JWT_SECRET, {
+            const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
                 expiresIn: '1d',
             });
 
@@ -51,7 +53,7 @@ module.exports = {
 
         // Protected route
         router.get('/protected', authenticateJWT, (req, res) => {
-            res.json({ message: 'This is a protected endpoint' });
+            res.json({ message: 'This is a protected endpoint showing yout token is valid now' });
         });
 
         app.use('/', router);

@@ -33,14 +33,14 @@ app.get("/", (req, res) => {
 
 //for general http request here seperate public and private requests
 app.use('/api', require('./app/routes/public.router'));
-// require("./app/routes/order.router")(app);
-// require("./app/routes/JWT.router").configureRoutes(app);
+app.use('/papi', require('./app/routes/private.router'));
+require("./app/routes/JWT.router").configureRoutes(app);
 
-// // method to handle the image query from api
-// const imageUpload = require('./app/others/imageUpload');
-// const imagesPath = path.join(__dirname, 'images/dishes');
-// app.use('/images', express.static(imagesPath));
-// app.use('/images', imageUpload);
+// method to handle the image query from api
+const imageUpload = require('./app/routes/imageUpload.router.js');
+const imagesPath = path.join(__dirname, 'images');
+app.use('/images', express.static(imagesPath));
+app.use('/images', imageUpload);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;

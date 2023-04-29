@@ -1,16 +1,24 @@
+const { Op } = require('sequelize');
 const db = require("../models");
 const Dishes = db.dishes;
 const Customises = db.customises
 const Details = db.details;
 const Orders = db.orders;
 
+// Helper function to get start and end date
+const getDateRange = (inputDate) => {
+    const startDate = new Date(inputDate);
+    const endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + 1);
+    return [startDate, endDate];
+};
 
 // Create and save new order
 // process 0: validate inputs
 // process 1: check the sum of quantity * current = total_price
 // process max: check payment
-// process 2: create and save Order in the database
-// process 3: create and save detail in the database
+// process 2: create and save Order&Detail in the database
+// process 3: send email to customer
 exports.createOrder = async (req, res) => {
     // 0.Validate inputs : data form and types and all dirved from a single store
     if (!req.body.total_price || !req.body.transaction_fee || !req.body.table_num || !req.body.details || req.body.details.length < 1) {
@@ -155,14 +163,18 @@ exports.createOrder = async (req, res) => {
     // Save Order in the database
     Orders.create(order)
         .then(orderData => {
-            Promise.all(req.body.details.map(({ dishId, quantity, customises, sub_price }) => {
+            Promise.all(req.body.details.map(async ({ dishId, quantity, customises, sub_price }) => {
+                const dish = await Dishes.findByPk(dishId);
+                const customiseInstances = await Promise.all(customises.map(customiseId => Customises.findByPk(customiseId)));
+                const customise_names = customiseInstances.map(customise => customise.name).join(',');
+
                 let detail = {
                     quantity: quantity,
                     sub_price: sub_price,
-                    customise_ids: JSON.stringify(customises),
+                    customise_names: customise_names,
                     orderId: orderData.id,
-                    dishId: dishId
-                }
+                    dish_name: dish.name
+                };
 
                 return Details.create(detail)
                     .catch(err => {
@@ -180,9 +192,8 @@ exports.createOrder = async (req, res) => {
                 // //send the message to the admin front end
                 // websocket.broadcastMessage(JSON.stringify({ message: "New order received", orderId: orderData.id }));
 
-            }
-            )
-            return
+            })
+            return;
         })
         .catch(err => {
             res.status(404).send({
@@ -219,4 +230,179 @@ exports.createOrder = async (req, res) => {
     //         });
 
     // }
-}; 
+};
+
+// get all orders for a specific date for a store
+exports.getOrdersByDate = async (req, res) => {
+    try {
+        const inputDate = req.params.date;
+        const storeId = req.query.store_id;
+        const page = parseInt(req.query.page) || 1;
+        let limit = parseInt(req.query.limit) || 10;
+        const offset = (page - 1) * limit;
+
+        if (!storeId) {
+            res.status(400).send({
+                message: "Missing storeId in the query parameters."
+            });
+            return;
+        }
+
+        if (limit > 50) {
+            limit = 50;
+        }
+
+        const [startDate, endDate] = getDateRange(inputDate);
+
+        const orders = await Orders.findAll({
+            where: {
+                date: {
+                    [Op.between]: [startDate, endDate]
+                },
+                storeId: storeId
+            },
+            include: [
+                {
+                    model: Details,
+                    as: 'details',
+                }
+            ],
+            limit: limit,
+            offset: offset
+        });
+
+        res.status(200).send(orders);
+    } catch (error) {
+        res.status(500).send({
+            message: error.message || "An error occurred while fetching the orders."
+        });
+    }
+};
+
+// Retrieve numbers of orders in a specific date
+exports.getOrdersCountByDate = async (req, res) => {
+    try {
+        const inputDate = req.params.date;
+        const storeId = req.query.store_id;
+        const [startDate, endDate] = getDateRange(inputDate);
+
+        if (!storeId) {
+            res.status(400).send({
+                message: "Missing storeId in the query parameters."
+            });
+            return;
+        }
+
+        const count = await Orders.count({
+            where: {
+                date: {
+                    [Op.between]: [startDate, endDate]
+                },
+                storeId: storeId
+            }
+        });
+        
+
+        res.status(200).send({ count: count });
+    } catch (error) {
+        res.status(500).send({
+            message: error.message || "An error occurred while counting the orders."
+        });
+    }
+};
+// Get a basic order summary for a store
+exports.getBasicOrderSummary = async (req, res) => {
+    try {
+        const storeId = req.query.store_id;
+
+        if (!storeId) {
+            res.status(400).send({
+                message: "Missing storeId in the query parameters."
+            });
+            return;
+        }
+
+        const orders = await Orders.findAll({ where: { storeId: storeId } });
+
+        let summary = {
+            total_orders: orders.length,
+            total_revenue: 0
+        };
+
+        orders.forEach(order => {
+            summary.total_revenue += order.total_price;
+        });
+
+        res.status(200).send(summary);
+    } catch (error) {
+        res.status(500).send({
+            message: error.message || "An error occurred while fetching the order summary."
+        });
+    }
+};
+// Retrieve a single Order with id
+exports.getOrderById = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const storeId = req.query.store_id;
+
+        if (!storeId) {
+            res.status(400).send({
+                message: "Missing storeId in the query parameters."
+            });
+            return;
+        }
+
+        const order = await Orders.findOne({
+            where: {
+                id: id,
+                storeId: storeId
+            }
+        });
+
+        if (!order) {
+            res.status(404).send({ message: "Order not found with id: " + id });
+            return;
+        }
+
+        res.status(200).send(order);
+    } catch (error) {
+        res.status(500).send({
+            message: error.message || "An error occurred while fetching the order."
+        });
+    }
+};
+// Make an order finished
+exports.updateOrderStatus = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const storeId = req.query.store_id;
+
+        if (!storeId) {
+            res.status(400).send({
+                message: "Missing storeId in the query parameters."
+            });
+            return;
+        }
+
+        const order = await Orders.findOne({
+            where: {
+                id: id,
+                storeId: storeId
+            }
+        });
+
+        if (!order) {
+            res.status(404).send({ message: "Order not found with id: " + id });
+            return;
+        }
+
+        const updatedOrder = await order.update({ status: 1 });
+
+        res.status(200).send(updatedOrder);
+    } catch (error) {
+        res.status(500).send({
+            message: error.message || "An error occurred while updating the order."
+        });
+    }
+};

@@ -54,12 +54,6 @@ db.details.belongsTo(db.orders, {
     as: "orders",
 });
 
-db.dishes.hasMany(db.details, { as: "details" });
-db.details.belongsTo(db.dishes, {
-    foreignKey: "dishId",
-    as: "dishes",
-});
-
 db.dishtypes.hasMany(db.dishes, { as: "dishes" });
 db.dishes.belongsTo(db.dishtypes, {
     foreignKey: "dishtypeId",
