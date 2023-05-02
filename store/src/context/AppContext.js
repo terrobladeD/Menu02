@@ -7,6 +7,7 @@ export const AppProvider = ({ children }) => {
   const [dishTypes, setDishTypes] = useState([]);
   const [tableNum, setTableNum] = useState(null);
   const [selectedDish, setSelectedDish] = useState(null);
+  const [cart, setCart] = useState([]);
 
   function handleDishSelect(dish) {
     setSelectedDish(dish);
@@ -15,21 +16,27 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     const fetchDishes = async () => {
       try {
+        // Fetch dish types
+        const responseDishTypes = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/dishtype?store_id=store1`);
+        const dishTypesData = await responseDishTypes.json();
+        // Set dish types
+        setDishTypes(dishTypesData);
 
-        const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/dish?store_id=store1`);
-        const data = await response.json();
+        // Fetch dishes
+        const responseDishes = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/dish?store_id=store1`);
+        const dishesData = await responseDishes.json();
 
-        const formattedDishes = data.map((dish) => ({
+        const formattedDishes = dishesData.map((dish) => ({
           id: dish.id,
           name: dish.name,
           description: dish.description,
           full_description: dish.full_description,
           price_ori: parseFloat(dish.price_ori),
           price_cur: parseFloat(dish.price_cur),
-          is_sold_out: dish.is_sold_out,
+          is_instock: dish.is_instock,
           image: dish.pict_url,
-          quantity: 0,
-          type: dish.type
+          type: dish.dishtypeId,
+          customises: dish.customises
         }));
 
         formattedDishes.sort((a, b) => {
@@ -43,9 +50,6 @@ export const AppProvider = ({ children }) => {
         });
 
         setDishes(formattedDishes);
-        const uniqueTypes = [...new Set(formattedDishes.map((dish) => dish.type))];
-        setDishTypes(uniqueTypes);
-
       } catch (error) {
         console.error('Failed to fetch dishes:', error);
       }
@@ -61,26 +65,76 @@ export const AppProvider = ({ children }) => {
 
   }, []);
 
-  const handleAddToCart = (dish) => {
-    setDishes((prevDishes) => {
-      const updatedDishes = prevDishes.map((d) => (d.id === dish.id ? { ...d, quantity: d.quantity + 1 } : d));
-      localStorage.setItem('dishes', JSON.stringify(updatedDishes));
-      return updatedDishes;
-    });
+  //when you want to update the cart item quantities based on both the dish and the selected customizes. It helps to identify the correct cart item to update by checking if the customizes match.
+  const customizesAreEqual = (customizes1, customizes2) => {
+    if (customizes1.length !== customizes2.length) {
+      return false;
+    }
+  
+    const sortedCustomizes1 = customizes1.sort((a, b) => a.id - b.id);
+    const sortedCustomizes2 = customizes2.sort((a, b) => a.id - b.id);
+  
+    for (let i = 0; i < sortedCustomizes1.length; i++) {
+      if (sortedCustomizes1[i].id !== sortedCustomizes2[i].id) {
+        return false;
+      }
+    }
+  
+    return true;
   };
 
-  const handleRemoveFromCart = (dish) => {
-    setDishes((prevDishes) => {
-      const updatedDishes = prevDishes.map((d) =>
-        d.id === dish.id ? { ...d, quantity: Math.max(d.quantity - 1, 0) } : d,
+  // Updated addToCart function
+  const handleAddToCart = (dish, customizes) => {
+    setCart((prevCart) => {
+      const existingCartItemIndex = prevCart.findIndex(
+        (cartItem) =>
+          cartItem.dish.id === dish.id &&
+          customizesAreEqual(cartItem.customizes, customizes)
       );
-      localStorage.setItem('dishes', JSON.stringify(updatedDishes));
-      return updatedDishes;
+
+      if (existingCartItemIndex !== -1) {
+        const updatedCart = [...prevCart];
+        updatedCart[existingCartItemIndex].quantity += 1;
+        return updatedCart;
+      } else {
+        return [
+          ...prevCart,
+          {
+            dish,
+            customizes,
+            quantity: 1
+          }
+        ];
+      }
     });
   };
 
-  const clearDishes = () => {
-    setDishes((prevDishes) => prevDishes.map((dish) => ({ ...dish, quantity: 0 })));
+  // Updated removeFromCart function
+  const handleRemoveFromCart = (dish, customizes) => {
+    setCart((prevCart) => {
+      const existingCartItemIndex = prevCart.findIndex(
+        (cartItem) =>
+          cartItem.dish.id === dish.id &&
+          customizesAreEqual(cartItem.customizes, customizes)
+      );
+
+      if (existingCartItemIndex !== -1) {
+        const updatedCart = [...prevCart];
+        updatedCart[existingCartItemIndex].quantity -= 1;
+
+        if (updatedCart[existingCartItemIndex].quantity <= 0) {
+          updatedCart.splice(existingCartItemIndex, 1);
+        }
+
+        return updatedCart;
+      } else {
+        return prevCart;
+      }
+    });
+  };
+
+  const clearCart = () => {
+    setCart([]);
   };
 
   const value = {
@@ -91,7 +145,8 @@ export const AppProvider = ({ children }) => {
     handleDishSelect,
     addToCart: handleAddToCart,
     removeFromCart: handleRemoveFromCart,
-    clearDishes
+    clearCart,
+    cart
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

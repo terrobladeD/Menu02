@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes} from 'react-router-dom';
 import { Container, Navbar } from 'react-bootstrap';
 import HomePage from './pages/HomePage';
 import MenuPage from './pages/MenuPage';
@@ -27,6 +27,16 @@ function App() {
     return () => {
       window.removeEventListener('resize', handleResize);
     };
+  }, []);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (!urlParams.has('store_id') || !urlParams.has('table_num')) {
+      // Read the default query parameters from the environment variable
+      const defaultQueryParams = process.env.REACT_APP_DEFAULT_QUERY_PARAMS || '';
+      // Redirect to the URL with the default query parameters
+      window.location.href = `${window.location.origin}/${defaultQueryParams}`;
+    }
   }, []);
 
   if (!isMobile) {

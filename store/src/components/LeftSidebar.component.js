@@ -29,7 +29,7 @@ function LeftSidebar({ scrollToTypeRef }) {
               whiteSpace: 'nowrap',
               backgroundColor: 'lightgrey'
             }} onClick={() => handleClick(type)}>
-              {type}
+              {type.type}
             </Nav.Link>
           ))}
         </Nav>
