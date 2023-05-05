@@ -67,6 +67,10 @@ export const AppProvider = ({ children }) => {
 
   //when you want to update the cart item quantities based on both the dish and the selected customizes. It helps to identify the correct cart item to update by checking if the customizes match.
   const customizesAreEqual = (customizes1, customizes2) => {
+    if (!customizes1 || !customizes2) {
+      return false;
+    }
+  
     if (customizes1.length !== customizes2.length) {
       return false;
     }

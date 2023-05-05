@@ -1,10 +1,11 @@
-import React,{useContext}  from 'react';
+import React, { useContext } from 'react';
 import AppContext from '../context/AppContext';
 import { Card, Button, Row, Col } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 
-function DishItem({ dish, onAddToCart, onRemoveFromCart}) {
-  const {handleDishSelect} = useContext(AppContext);
+function DishItem({ dish, getDishQuantityInCart, onAddToCart, onRemoveFromCart }) {
+  const { handleDishSelect } = useContext(AppContext);
+  const dishQuantity = getDishQuantityInCart(dish);
 
   const handleAddToCart = (e) => {
     e.stopPropagation();
@@ -19,7 +20,7 @@ function DishItem({ dish, onAddToCart, onRemoveFromCart}) {
   const navigate = useNavigate();
   const handleItemClick = () => {
     handleDishSelect(dish)
-    navigate(`/dishdetail/${dish.id}`,{state:{dish}});
+    navigate(`/dishdetail/${dish.id}`, { state: { dish } });
   };
 
   return (
@@ -37,26 +38,26 @@ function DishItem({ dish, onAddToCart, onRemoveFromCart}) {
             <Card.Title>{dish.name}</Card.Title>
             <Card.Text>{dish.description}</Card.Text>
             <div className="d-flex align-items-center justify-content-between">
-            <div>
-            {dish.price_ori !== dish.price_cur && (
-                <span style={{ textDecoration: 'line-through', fontSize: '0.8em', color: 'grey', marginRight: '5px' }}>
-                  ${dish.price_ori.toFixed(2)}
-                </span>
-              )}
-              <span style={{ marginRight: '5px' }}>${dish.price_cur.toFixed(2)}</span>
-            </div>
+              <div>
+                {dish.price_ori !== dish.price_cur && (
+                  <span style={{ textDecoration: 'line-through', fontSize: '0.8em', color: 'grey', marginRight: '5px' }}>
+                    ${dish.price_ori.toFixed(2)}
+                  </span>
+                )}
+                <span style={{ marginRight: '5px' }}>${dish.price_cur.toFixed(2)}</span>
+              </div>
 
-              {!dish.is_sold_out && dish.quantity === 0 && (
+              {!dish.is_sold_out && dishQuantity === 0 && (
                 <Button variant="outline-primary" onClick={handleAddToCart} className="rounded-circle px-2" style={{ fontSize: '11px' }}>
                   +
                 </Button>
               )}
-              {!dish.is_sold_out && dish.quantity > 0 && (
+              {!dish.is_sold_out && dishQuantity > 0 && (
                 <div>
                   <Button variant="outline-primary" onClick={handleRemoveFromCart} className="rounded-circle px-2" style={{ fontSize: '11px', marginRight: '5px' }}>
                     -
                   </Button>
-                  <span className="mx-2">{dish.quantity}</span>
+                  <span className="mx-2">{dishQuantity}</span>
                   <Button variant="outline-primary" onClick={handleAddToCart} className="rounded-circle px-2" style={{ fontSize: '11px' }}>
                     +
                   </Button>

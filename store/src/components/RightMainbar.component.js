@@ -3,7 +3,7 @@ import DishItem from './DishItem.component';
 import AppContext from '../context/AppContext';
 
 function RightMainbar({ scrollToTypeRef }) {
-  const { dishes, dishTypes, addToCart, removeFromCart } = useContext(AppContext);
+  const { dishes, dishTypes, addToCart, removeFromCart, cart } = useContext(AppContext);
 
   // Group dishes by their types
   const groupedDishes = dishTypes.reduce((acc, type) => {
@@ -13,7 +13,7 @@ function RightMainbar({ scrollToTypeRef }) {
     });
     return acc;
   }, {});
-  
+
 
   const typeRefs = useRef([]);
 
@@ -32,6 +32,19 @@ function RightMainbar({ scrollToTypeRef }) {
     };
   }, [dishTypes, scrollToTypeRef]);
 
+  //get the quantity of every dish in cart to be reflected on the dish
+  const getDishQuantityInCart = (dish) => {
+    let totalQuantity = 0;
+
+    cart.forEach((cartItem) => {
+      if (cartItem.dish.id === dish.id) {
+        totalQuantity += cartItem.quantity;
+      }
+    });
+
+    return totalQuantity;
+  };
+
   return (
     <div style={{ paddingBottom: '10vh' }}>
       {dishTypes.map((type, index) => (
@@ -41,8 +54,9 @@ function RightMainbar({ scrollToTypeRef }) {
             <DishItem
               key={dish.id}
               dish={dish}
-              onAddToCart={addToCart}
-              onRemoveFromCart={removeFromCart}
+              getDishQuantityInCart={getDishQuantityInCart}
+              onAddToCart={(dish) => addToCart(dish, dish.customizes)}
+              onRemoveFromCart={(dish) => removeFromCart(dish, dish.customizes)}
             />
           ))}
         </div>
