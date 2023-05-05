@@ -9,6 +9,18 @@ export const AppProvider = ({ children }) => {
   const [selectedDish, setSelectedDish] = useState(null);
   const [cart, setCart] = useState([]);
 
+  const getDishQuantityInCart = (dish) => {
+    let totalQuantity = 0;
+  
+    cart.forEach((cartItem) => {
+      if (cartItem.dish.id === dish.id) {
+        totalQuantity += cartItem.quantity;
+      }
+    });
+  
+    return totalQuantity;
+  };
+
   function handleDishSelect(dish) {
     setSelectedDish(dish);
   }
@@ -150,7 +162,8 @@ export const AppProvider = ({ children }) => {
     addToCart: handleAddToCart,
     removeFromCart: handleRemoveFromCart,
     clearCart,
-    cart
+    cart,
+    getDishQuantityInCart
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

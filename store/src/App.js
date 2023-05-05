@@ -29,16 +29,6 @@ function App() {
     };
   }, []);
 
-  // useEffect(() => {
-  //   const urlParams = new URLSearchParams(window.location.search);
-  //   if (!urlParams.has('store_id') || !urlParams.has('table_num')) {
-  //     // Read the default query parameters from the environment variable
-  //     const defaultQueryParams = process.env.REACT_APP_DEFAULT_QUERY_PARAMS || '';
-  //     // Redirect to the URL with the default query parameters
-  //     window.location.href = `${window.location.origin}/${defaultQueryParams}`;
-  //   }
-  // }, []);
-
   if (!isMobile) {
     return (
       <div className="text-center p-5">

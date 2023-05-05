@@ -1,4 +1,4 @@
-import React, { useState} from 'react';
+import React, { useState } from 'react';
 import { Form } from 'react-bootstrap';
 
 function Customise({ metaName, customises, onCustomiseChange, minSelection, maxSelection }) {
@@ -7,22 +7,22 @@ function Customise({ metaName, customises, onCustomiseChange, minSelection, maxS
     const handleCheckboxChange = (event, customise) => {
         const isChecked = event.target.checked;
         let updatedSelectedItems = [];
-    
+
         if (isChecked) {
-          if (selectedItems.length >= maxSelection) {
-            return;
-          }
-    
-          updatedSelectedItems = [...selectedItems, customise];
-          setSelectedItems(updatedSelectedItems);
+            if (selectedItems.length >= maxSelection) {
+                return;
+            }
+
+            updatedSelectedItems = [...selectedItems, customise];
+            setSelectedItems(updatedSelectedItems);
         } else {
-          updatedSelectedItems = selectedItems.filter(item => item.id !== customise.id);
-          setSelectedItems(updatedSelectedItems);
+            updatedSelectedItems = selectedItems.filter(item => item.id !== customise.id);
+            setSelectedItems(updatedSelectedItems);
         }
-    
+
         const isSelected = updatedSelectedItems.some(item => item.id === customise.id);
         onCustomiseChange(customise, isSelected);
-      };
+    };
 
     return (
         <div>

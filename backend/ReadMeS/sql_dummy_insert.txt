@@ -17,7 +17,22 @@ VALUES (1, 'Pizza', 'PZ', 'Cheese Pizza', 'Delicious cheese pizza', 10, 10, 1, 1
        (3, 'Ice Cream', 'IC', 'Vanilla ice cream', 'Smooth and creamy vanilla ice cream', 5, 5, 1, 1, 'https://example.com/icecream.jpg', 1, NOW(), NOW(), 'store1', 2),
        (4, 'Burger', 'BG', 'Cheeseburger', 'Juicy cheeseburger with lettuce and tomato', 7, 7, 1, 1, 'https://example.com/burger.jpg', 1, NOW(), NOW(), 'store2', 3),
        (5, 'Salad', 'SD', 'Garden salad', 'Fresh garden salad with vegetables', 6, 6, 1, 1, 'https://example.com/salad.jpg', 1, NOW(), NOW(), 'store2', 3),
-       (6, 'Cake', 'CK', 'Chocolate cake', 'Rich and moist chocolate cake', 6, 6, 1, 1, 'https://example.com/cake.jpg', 1, NOW(), NOW(), 'store2', 4);
+       (6, 'Cake', 'CK', 'Chocolate cake', 'Rich and moist chocolate cake', 6, 6, 1, 1, 'http://localhost:8080/images/TsrpxEVCqF4kBOR90jFHlQhlIAHnR7+xYFsGwTvgpSqvf6xHuNgq5NcKOutwR2Rx.png', 1, NOW(), NOW(), 'store2', 4),
+       (7, 'Pepperoni Pizza', 'PPZ', 'Pepperoni Pizza', 'Delicious pepperoni pizza', 12, 12, 1, 1, 'https://example.com/pepperoni_pizza.jpg', 1, NOW(), NOW(), 'store1', 1),
+       (8, 'Veggie Pizza', 'VPZ', 'Veggie Pizza', 'Tasty veggie pizza with fresh vegetables', 11, 11, 1, 1, 'https://example.com/veggie_pizza.jpg', 1, NOW(), NOW(), 'store1', 1),
+       (9, 'Spaghetti', 'SP', 'Spaghetti with Meatballs', 'Classic spaghetti with meatballs and marinara sauce', 9, 9, 1, 1, 'https://example.com/spaghetti.jpg', 1, NOW(), NOW(), 'store1', 1),
+       (10, 'Lasagna', 'LS', 'Lasagna', 'Delicious layered lasagna with cheese and meat sauce', 12, 12, 1, 1, 'https://example.com/lasagna.jpg', 1, NOW(), NOW(), 'store1', 1),
+       (11, 'Fettuccine Alfredo', 'FA', 'Fettuccine Alfredo', 'Creamy fettuccine Alfredo with parmesan cheese', 10, 10, 1, 1, 'https://example.com/fettuccine_alfredo.jpg', 1, NOW(), NOW(), 'store1', 1),
+       (12, 'Chicken Parmesan', 'CP', 'Chicken Parmesan', 'Crispy breaded chicken with marinara sauce and melted cheese', 11, 11, 1, 1, 'https://example.com/chicken_parmesan.jpg', 1, NOW(), NOW(), 'store1', 1),
+       (13, 'Tiramisu', 'TM', 'Tiramisu', 'Classic Italian dessert with layers of coffee-soaked ladyfingers and mascarpone cheese', 7, 7, 1, 1, 'https://example.com/tiramisu.jpg', 1, NOW(), NOW(), 'store1', 2),
+       (14, 'Panna Cotta', 'PC', 'Panna Cotta', 'Smooth and creamy Italian dessert with a hint of vanilla', 6, 6, 1, 1, 'https://example.com/panna_cotta.jpg', 1, NOW(), NOW(), 'store1', 2),
+       (15, 'Cannoli', 'CN', 'Cannoli', 'Crisp pastry shells filled with sweet ricotta cheese', 6, 6, 1, 1, 'https://example.com/cannoli.jpg', 1, NOW(), NOW(), 'store1', 2),
+       (16, 'Margarita Pizza', 'MPZ', 'Margarita Pizza', 'Classic Margarita pizza with fresh tomatoes, basil, and mozzarella', 11, 11, 1, 1, 'https://example.com/margarita_pizza.jpg', 1, NOW(), NOW(), 'store1', 1),
+       (17, 'BBQ Chicken Pizza', 'BPZ', 'BBQ Chicken Pizza', 'Tasty BBQ chicken pizza with red onions and cilantro', 12, 12, 1, 1, 'https://example.com/bbq_chicken_pizza.jpg', 1, NOW(), NOW(), 'store1', 1),
+       (18, 'Shrimp Scampi', 'SS', 'Shrimp Scampi', 'Succulent shrimp sautéed in garlic butter and white wine', 13, 13, 1, 1, 'https://example.com/shrimp_scampi.jpg', 1, NOW(), NOW(), 'store1', 1),
+       (19, 'Chocolate Gelato', 'CG', 'Chocolate Gelato', 'Rich and creamy chocolate gelato', 6, 6, 1, 1, 'https://example.com/chocolate_gelato.jpg', 1, NOW(), NOW(), 'store1', 2),
+       (20, 'Lemon Sorbet', 'LSB', 'Lemon Sorbet', 'Refreshing lemon sorbet with a tangy citrus flavor', 5, 5, 1, 1, 'https://example.com/lemon_sorbet.jpg', 1, NOW(), NOW(), 'store1', 2);
+
 
 -- Insert customises
 INSERT INTO `customises` (`id`, `meta_name`, `meta_seq`, `meta_min_tk`, `meta_max_tk`, `name`, `price`, `createdAt`, `updatedAt`, `dishId`)

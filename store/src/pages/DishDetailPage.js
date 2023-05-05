@@ -1,16 +1,15 @@
-import Customise from '../components/Customise.component';
-
 import React, { useState, useContext, useEffect } from 'react';
 import AppContext from '../context/AppContext';
 import { Button, Row, Col } from 'react-bootstrap';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import '../App.css';
+import Customise from '../components/Customise.component';
 
 function DishDetailPage() {
-  const { cart, addToCart, removeFromCart } = useContext(AppContext);
+  const navigate = useNavigate();
+  const { addToCart } = useContext(AppContext);
   const location = useLocation();
   const dish = location.state.dish;
-  const [quantity, setQuantity] = useState(0);
   const [selectedCustomises, setSelectedCustomises] = useState([]);
   const [totalPrice, setTotalPrice] = useState(dish.price_cur);
 
@@ -21,26 +20,39 @@ function DishDetailPage() {
     );
   }, [selectedCustomises, dish.price_cur]);
 
-  const getDishQuantityInCart = (dish) => {
-    let totalQuantity = 0;
+  // Check if customise selection is valid
+  const isCustomiseSelectionValid = () => {
+    if (!dish.customises) {
+      return true;
+    }
 
-    cart.forEach((cartItem) => {
-      if (cartItem.dish.id === dish.id) {
-        totalQuantity += cartItem.quantity;
+    const customisesByMetaName = dish.customises.reduce((acc, customise) => {
+      if (!acc[customise.meta_name]) {
+        acc[customise.meta_name] = [];
       }
+      acc[customise.meta_name].push(customise);
+      return acc;
+    }, {});
+
+    return Object.entries(customisesByMetaName).every(([metaName, customises]) => {
+      const minSelection = customises[0].meta_min_tk;
+      const maxSelection = customises[0].meta_max_tk;
+      const selectedCustomisesCount = selectedCustomises.filter((selectedCustomise) =>
+        customises.some((customise) => customise.id === selectedCustomise.id)
+      ).length;
+
+      return selectedCustomisesCount >= minSelection && selectedCustomisesCount <= maxSelection;
     });
-
-    return totalQuantity;
   };
 
+  // Add dish to cart with customises validation 
   const handleAddToCart = (dish, customises) => {
+    if (!isCustomiseSelectionValid()) {
+      alert('Please select customisation options as required.');
+      return;
+    }
     addToCart(dish, customises);
-    setQuantity(getDishQuantityInCart(dish));
-  };
-
-  const handleRemoveFromCart = (dish, customises) => {
-    removeFromCart(dish, customises);
-    setQuantity(getDishQuantityInCart(dish));
+    navigate('/menu');
   };
 
   const handleCustomiseChange = (customise, isSelected) => {
@@ -100,6 +112,7 @@ function DishDetailPage() {
             borderRadius: '8px'
           }}
         />
+        
       </div>
       <div className="dish-detail-div">
         {dish.price_ori !== dish.price_cur && (
@@ -145,7 +158,7 @@ function DishDetailPage() {
         >
           ${totalPrice.toFixed(2)}
         </span>
-        {dish.is_sold_out && (
+        {!dish.is_instock && (
           <span
             style={{
               fontWeight: 'bold',
@@ -156,30 +169,18 @@ function DishDetailPage() {
             Sold Out
           </span>
         )}
-        {!dish.is_sold_out && quantity <= 0 && (
-          <Button
-            variant="outline-primary"
-            onClick={() => handleAddToCart(dish, selectedCustomises)}
-            style={{ fontSize: '11px' }}
-          >
-            Add to Cart
-          </Button>
-        )}
-        {!dish.is_sold_out && quantity > 0 && (
-          <div>
-            <Button variant="outline-primary" onClick={() => handleRemoveFromCart(dish, selectedCustomises)} className="rounded-circle px-2" style={{ fontSize: '11px', marginRight: '5px' }}>
-              -
+        {dish.is_instock && (
+            <Button
+              variant="outline-primary"
+              onClick={() => handleAddToCart(dish, selectedCustomises)}
+              style={{ fontSize: '11px' }}
+            >
+              Add to Cart
             </Button>
-            <span className="mx-2">{getDishQuantityInCart(dish)}</span>
-            <Button variant="outline-primary" onClick={() => handleAddToCart(dish, selectedCustomises)} className="rounded-circle px-2" style={{ fontSize: '11px' }}>
-              +
-            </Button>
-          </div>
         )}
       </span>
     </div>
   );
-
 }
 
 export default DishDetailPage;
