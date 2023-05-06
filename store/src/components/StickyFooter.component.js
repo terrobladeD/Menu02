@@ -4,11 +4,10 @@ import { Button } from 'react-bootstrap';
 import AppContext from '../context/AppContext';
 
 function StickyFooter() {
-  const { dishes } = useContext(AppContext);
+  const { cart } = useContext(AppContext);
   const navigate = useNavigate();
 
-  const totalItems = dishes.reduce((acc, dish) => acc + dish.quantity, 0);
-  const totalPrice = dishes.reduce((acc, dish) => acc + dish.price_cur * dish.quantity, 0);
+  const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
 
   const handleClick = () => {
     navigate('/shopping-cart');
@@ -25,14 +24,18 @@ function StickyFooter() {
     backgroundColor: '#f8f9fa',
     boxShadow: '0px -2px 5px rgba(0, 0, 0, 0.1)',
   };
+  
   if (totalItems > 0) {
-  return (
-    <div style={stickyFooterStyle}>
-      <Button variant="primary" onClick={handleClick}>
-        {`Total Items: ${totalItems} | Total Price: $${totalPrice.toFixed(2)}`}
-      </Button>
-    </div>
-  );}else{return null;}
+    return (
+      <div style={stickyFooterStyle}>
+        <Button variant="primary" onClick={handleClick}>
+          {`View Cart  (Total Items:${totalItems} )`}
+        </Button>
+      </div>
+    );
+  } else {
+    return null;
+  }
 }
 
 export default StickyFooter;

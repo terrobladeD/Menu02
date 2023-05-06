@@ -11,13 +11,13 @@ export const AppProvider = ({ children }) => {
 
   const getDishQuantityInCart = (dish) => {
     let totalQuantity = 0;
-  
+
     cart.forEach((cartItem) => {
       if (cartItem.dish.id === dish.id) {
         totalQuantity += cartItem.quantity;
       }
     });
-  
+
     return totalQuantity;
   };
 
@@ -82,26 +82,29 @@ export const AppProvider = ({ children }) => {
     if (!customizes1 || !customizes2) {
       return false;
     }
-  
+
     if (customizes1.length !== customizes2.length) {
       return false;
     }
-  
+
     const sortedCustomizes1 = customizes1.sort((a, b) => a.id - b.id);
     const sortedCustomizes2 = customizes2.sort((a, b) => a.id - b.id);
-  
+
     for (let i = 0; i < sortedCustomizes1.length; i++) {
       if (sortedCustomizes1[i].id !== sortedCustomizes2[i].id) {
         return false;
       }
     }
-  
+
     return true;
   };
 
   // Updated addToCart function
   const handleAddToCart = (dish, customizes) => {
+    console.log('1111111')
+    
     setCart((prevCart) => {
+      console.log('222222')
       const existingCartItemIndex = prevCart.findIndex(
         (cartItem) =>
           cartItem.dish.id === dish.id &&
@@ -109,7 +112,7 @@ export const AppProvider = ({ children }) => {
       );
 
       if (existingCartItemIndex !== -1) {
-        const updatedCart = [...prevCart];
+        const updatedCart = [...prevCart];       
         updatedCart[existingCartItemIndex].quantity += 1;
         return updatedCart;
       } else {
@@ -124,6 +127,7 @@ export const AppProvider = ({ children }) => {
       }
     });
   };
+
 
   // Updated removeFromCart function
   const handleRemoveFromCart = (dish, customizes) => {

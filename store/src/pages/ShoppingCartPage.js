@@ -6,25 +6,37 @@ import { useNavigate } from 'react-router-dom';
 import '../App.css';
 
 function ShoppingCartPage() {
-  const { dishes, addToCart, removeFromCart } = useContext(AppContext);
-  const cartItems = dishes.filter((dish) => dish.quantity > 0);
-  const total = cartItems.reduce((acc, item) => acc + item.price_cur * item.quantity, 0);
+  const { cart, addToCart, removeFromCart } = useContext(AppContext);
+  const total = cart.reduce((acc, item) => {
+    const customizesTotalPrice = item.customizes.reduce(
+      (acc, customize) => acc + customize.price,
+      0
+    );
+    const itemTotalPrice = (item.dish.price_cur + customizesTotalPrice) * item.quantity;
+    return acc + itemTotalPrice;
+  }, 0);
   const navigate = useNavigate();
+
+  function generateCartItemKey(dish, customizes) {
+    const customizesIds = customizes.map(customize => customize.id).join('-');
+    return `${dish.id}-${customizesIds}`;
+  }
+
 
   return (
     <Container>
       <h1>Shopping Cart</h1>
-      {cartItems.length === 0 && (
+      {cart.length === 0 && (
         <h2 onClick={() => navigate('/menu')}>Cart is Empty!</h2>
       )}
-      {cartItems.map((item) => (
-        <Card key={item.id} className="mb-4">
+      {cart.map((item) => (
+        <Card key={generateCartItemKey(item.dish, item.customizes)} className="mb-4">
           <Row className="align-items-center">
             <Col xs={12} md={12}>
               <CartItem
                 item={item}
-                onIncrease={() => addToCart(item)}
-                onDecrease={() => removeFromCart(item)}
+                onIncrease={() => addToCart(item.dish, item.customizes)}
+                onDecrease={() => removeFromCart(item.dish, item.customizes)}
               />
             </Col>
           </Row>
@@ -36,12 +48,11 @@ function ShoppingCartPage() {
           <Button variant="primary" onClick={() => navigate('/menu')} className="me-2">
             Add more
           </Button>
-          {cartItems.length !== 0 && (
+          {cart.length !== 0 && (
             <Button variant="success" onClick={() => navigate('/checkout')}>
               Checkout
             </Button>
           )}
-
         </div>
       </div>
     </Container>

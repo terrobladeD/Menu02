@@ -28,16 +28,16 @@ function DishItem({ dish, getDishQuantityInCart }) {
                 position: 'absolute',
                 top: '5px',
                 left: '5px',
-                backgroundColor: 'white',
-                color: '#0d6efd',
-                border: '1px solid #0d6efd',
+                backgroundColor: 'grey',
+                border: '1px solid white',
                 borderRadius: '50%',
-                width: '24px',
-                height: '24px',
+                width: '30px',
+                height: '30px',
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
-                fontSize: '11px',
+                fontSize: '20px',
+                color:'white'
               }}
             >
               {dishQuantity}
