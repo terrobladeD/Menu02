@@ -1,18 +1,18 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext,useState } from 'react';
 import { Button, Form, Row, Col, Modal } from 'react-bootstrap';
 import AppContext from '../context/AppContext';
 import { useNavigate } from 'react-router-dom';
 
 function Checkout() {
-  const { dishes, tableNum, clearDishes } = useContext(AppContext);
+  const { cart, tableNum, clearCart } = useContext(AppContext);
   const [inputTableNum, setInputTableNum] = useState(tableNum || '');
   const [email, setEmail] = useState('');
   const [additionalInfo, setAdditionalInfo] = useState('');
   const navigate = useNavigate();
   const [showPopup, setShowPopup] = useState(true);
 
-  const totalFoodPrice = dishes.reduce((acc, dish) => acc + dish.price_cur * dish.quantity, 0);
-  const transactionFee = totalFoodPrice < 50 ? totalFoodPrice * 0.05 : totalFoodPrice * 0.02;
+  const totalFoodPrice = cart.reduce((acc, cartItem) => acc + cartItem.price * cartItem.quantity, 0);
+  const transactionFee = totalFoodPrice < 50 ? totalFoodPrice * 0.06 : totalFoodPrice * 0.03;
   const totalPrice = totalFoodPrice + transactionFee;
 
   const paddingTopBottom = { paddingTop: '8px', paddingBottom: '8px' };
@@ -22,16 +22,20 @@ function Checkout() {
 
     const orderData = {
       total_price: totalPrice,
-      table_num: parseInt(inputTableNum, 10),
+      transaction_fee: transactionFee,
+      table_num: inputTableNum,
       email: email,
       additional_info: additionalInfo,
-      details: dishes
-        .filter((dish) => dish.quantity > 0)
-        .map((dish) => ({ quantity: dish.quantity, dishId: dish.id })),
+      details: cart.map((cartItem) => ({
+        quantity: cartItem.quantity,
+        dishId: cartItem.dish.id,
+        customises: cartItem.customizes.map((customize) => customize.id),
+        sub_price: cartItem.price * cartItem.quantity,
+      })),
     };
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/order/`, {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/order?store_id=store1`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -40,9 +44,8 @@ function Checkout() {
       });
 
       if (response.ok) {
-        // handle the form submission and proceed to the payment gateway
         alert('Payment finished');
-        clearDishes();
+        clearCart();
         navigate('/');
       } else {
         alert('Error submitting the order');
@@ -65,7 +68,7 @@ function Checkout() {
     <div style={{ padding: '8px' }}>
       <Row>
         <Col style={paddingTopBottom} xs={4} md={3}>
-          <Button variant="outline-secondary" onClick={() => navigate('/shopping-cart')}>
+          <Button variant="outline-primary" onClick={() => navigate('/shopping-cart')}>
             Back
           </Button>
         </Col>
@@ -121,7 +124,6 @@ function Checkout() {
             <Button variant="secondary" onClick={handlePopupClose}>
               No
             </Button>
-
           </Modal.Footer>
         </Modal>
       )}
@@ -130,4 +132,3 @@ function Checkout() {
 }
 
 export default Checkout;
-

@@ -1,13 +1,38 @@
 import React, { createContext, useState, useEffect } from 'react';
 
 const AppContext = createContext();
+const STORAGE_KEY = 'cartItems';
+const EXPIRATION_TIME = 5 * 60 * 1000; // 5 minutes
+const loadCartItemsFromLocalStorage = () => {
+  const storedCartData = localStorage.getItem(STORAGE_KEY);
+
+  if (storedCartData) {
+    const { data, timestamp } = JSON.parse(storedCartData);
+    const currentTime = new Date().getTime();
+
+    if (currentTime - timestamp < EXPIRATION_TIME) {
+      return data;
+    } else {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+  }
+
+  return [];
+};
 
 export const AppProvider = ({ children }) => {
   const [dishes, setDishes] = useState([]);
   const [dishTypes, setDishTypes] = useState([]);
   const [tableNum, setTableNum] = useState(null);
   const [selectedDish, setSelectedDish] = useState(null);
-  const [cart, setCart] = useState([]);
+  const [cart, setCart] = useState(() => loadCartItemsFromLocalStorage());
+
+  useEffect(() => {
+    const currentTime = new Date().getTime();
+    const cartDataToStore = JSON.stringify({ data: cart, timestamp: currentTime });
+
+    localStorage.setItem(STORAGE_KEY, cartDataToStore);
+  }, [cart]);
 
   const getDishQuantityInCart = (dish) => {
     let totalQuantity = 0;
@@ -69,7 +94,7 @@ export const AppProvider = ({ children }) => {
 
     fetchDishes();
     const queryParams = new URLSearchParams(window.location.search);
-    const tableNumParam = queryParams.get('tablenum');
+    const tableNumParam = queryParams.get('table_num');
 
     if (tableNumParam) {
       setTableNum(tableNumParam);
@@ -101,10 +126,12 @@ export const AppProvider = ({ children }) => {
 
   // Updated addToCart function
   const handleAddToCart = (dish, customizes) => {
-    console.log('1111111')
-    
+    // Calculate the total price for the dish including the customizes
+    const totalPrice = dish.price_cur + (customizes && customizes.length > 0
+      ? customizes.reduce((sum, customize) => sum + customize.price, 0)
+      : 0);
+
     setCart((prevCart) => {
-      console.log('222222')
       const existingCartItemIndex = prevCart.findIndex(
         (cartItem) =>
           cartItem.dish.id === dish.id &&
@@ -112,7 +139,7 @@ export const AppProvider = ({ children }) => {
       );
 
       if (existingCartItemIndex !== -1) {
-        const updatedCart = [...prevCart];       
+        const updatedCart = JSON.parse(JSON.stringify(prevCart));
         updatedCart[existingCartItemIndex].quantity += 1;
         return updatedCart;
       } else {
@@ -121,12 +148,14 @@ export const AppProvider = ({ children }) => {
           {
             dish,
             customizes,
-            quantity: 1
+            quantity: 1,
+            price: totalPrice, // Add the total price as a property to the cart item
           }
         ];
       }
     });
   };
+
 
 
   // Updated removeFromCart function
@@ -139,7 +168,8 @@ export const AppProvider = ({ children }) => {
       );
 
       if (existingCartItemIndex !== -1) {
-        const updatedCart = [...prevCart];
+        // const updatedCart = [...prevCart];
+        const updatedCart = JSON.parse(JSON.stringify(prevCart));
         updatedCart[existingCartItemIndex].quantity -= 1;
 
         if (updatedCart[existingCartItemIndex].quantity <= 0) {

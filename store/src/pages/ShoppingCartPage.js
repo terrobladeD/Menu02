@@ -7,12 +7,9 @@ import '../App.css';
 
 function ShoppingCartPage() {
   const { cart, addToCart, removeFromCart } = useContext(AppContext);
+  // 使用 cart 中的 price 属性直接计算购物车总价
   const total = cart.reduce((acc, item) => {
-    const customizesTotalPrice = item.customizes.reduce(
-      (acc, customize) => acc + customize.price,
-      0
-    );
-    const itemTotalPrice = (item.dish.price_cur + customizesTotalPrice) * item.quantity;
+    const itemTotalPrice = item.price * item.quantity;
     return acc + itemTotalPrice;
   }, 0);
   const navigate = useNavigate();
@@ -21,7 +18,6 @@ function ShoppingCartPage() {
     const customizesIds = customizes.map(customize => customize.id).join('-');
     return `${dish.id}-${customizesIds}`;
   }
-
 
   return (
     <Container>
