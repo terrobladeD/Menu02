@@ -4,7 +4,7 @@ import AppContext from '../context/AppContext';
 import { useNavigate } from 'react-router-dom';
 
 function Checkout() {
-  const { cart, tableNum, clearCart } = useContext(AppContext);
+  const { cart, tableNum, storeId, clearCart } = useContext(AppContext);
   const [inputTableNum, setInputTableNum] = useState(tableNum || '');
   const [email, setEmail] = useState('');
   const [additionalInfo, setAdditionalInfo] = useState('');
@@ -35,7 +35,7 @@ function Checkout() {
     };
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/order?store_id=store1`, {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/order?store_id=${storeId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,9 +1,11 @@
-const { Op } = require('sequelize');
+const { Op, or } = require('sequelize');
+const sendOrderEmail = require('../others/orderEmailSender')
 const db = require("../models");
 const Dishes = db.dishes;
 const Customises = db.customises
 const Details = db.details;
 const Orders = db.orders;
+const Stores = db.stores
 
 // Helper function to get start and end date
 const getDateRange = (inputDate) => {
@@ -193,7 +195,7 @@ exports.createOrder = async (req, res) => {
                 // websocket.broadcastMessage(JSON.stringify({ message: "New order received", orderId: orderData.id }));
 
             })
-            return;
+
         })
         .catch(err => {
             res.status(404).send({
@@ -202,34 +204,67 @@ exports.createOrder = async (req, res) => {
             return;
         });
 
-    // //3. sent email to customer
-    // if (order.email) {
-    //     const dishIds = req.body.details.map(detail => detail.dishId);
+    //3. sent email to customer
+    if (order.email) {
+        const dishIds = req.body.details.map(detail => detail.dishId);
+        const customisesIds = [].concat(...req.body.details.map(detail => detail.customises));
+        const store = await Stores.findByPk( req.query.store_id);
+        if (!store) {
+            res.status(404).send({ message: "Store not found with id: " +  req.query.store_id });
+            return;
+        }
+        const storeName = store.name;
 
-    //     Dish.findAll({
-    //         where: {
-    //             id: {
-    //                 [Op.in]: dishIds
-    //             }
-    //         }
-    //     })
-    //         .then(dishes => {
-    //             const orderDetails = req.body.details.map(detail => {
-    //                 const dish = dishes.find(d => d.id === detail.dishId);
-    //                 return {
-    //                     quantity: detail.quantity,
-    //                     name: dish.name,
-    //                     price: dish.price_cur
-    //                 };
-    //             });
+        const fetchDishes = Dishes.findAll({
+            where: {
+                id: {
+                    [Op.in]: dishIds
+                }
+            }
+        });
 
-    //             sendOrderEmail(order, orderDetails);
-    //         })
-    //         .catch(err => {
-    //             console.error('Error fetching dish details for email:', err);
-    //         });
+        const fetchCustomises = Customises.findAll({
+            where: {
+                id: {
+                    [Op.in]: customisesIds
+                }
+            }
+        });
 
-    // }
+        Promise.all([fetchDishes, fetchCustomises])
+            .then(([dishes, customises]) => {
+                const orderDetails = req.body.details.map(detail => {
+                    const dish = dishes.find(d => d.id === detail.dishId);
+                    const customisesNames = detail.customises.map(cId => {
+                        const customise = customises.find(c => c.id === cId);
+                        return customise ? customise.name : '';
+                    });
+                    return {
+                        quantity: detail.quantity,
+                        name: dish.name,
+                        price: detail.sub_price,
+                        customises: customisesNames
+                    };
+                });
+
+                const orderInfo = {
+                    storeName: storeName,
+                    tableNum: req.body.table_num,
+                    totalPrice: req.body.total_price,
+                    transactionFee: req.body.transaction_fee,
+                }
+                const allDetails = {
+                    ...orderInfo,
+                    orderDetails: orderDetails
+                }
+                // console.log('~~~~', allDetails);
+                sendOrderEmail(req.body.email, allDetails);
+            })
+            .catch(err => {
+                console.error('Error fetching dish and customise details for email:', err);
+            });
+    }
+
 };
 
 // get all orders for a specific date for a store
@@ -301,7 +336,7 @@ exports.getOrdersCountByDate = async (req, res) => {
                 storeId: storeId
             }
         });
-        
+
 
         res.status(200).send({ count: count });
     } catch (error) {

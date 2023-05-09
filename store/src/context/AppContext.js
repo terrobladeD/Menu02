@@ -3,6 +3,9 @@ import React, { createContext, useState, useEffect } from 'react';
 const AppContext = createContext();
 const STORAGE_KEY = 'cartItems';
 const EXPIRATION_TIME = 5 * 60 * 1000; // 5 minutes
+const DEFAULT_STORE_ID = 'store1';
+const DEFAULT_TABLE_NUM = '111';
+
 const loadCartItemsFromLocalStorage = () => {
   const storedCartData = localStorage.getItem(STORAGE_KEY);
 
@@ -23,7 +26,8 @@ const loadCartItemsFromLocalStorage = () => {
 export const AppProvider = ({ children }) => {
   const [dishes, setDishes] = useState([]);
   const [dishTypes, setDishTypes] = useState([]);
-  const [tableNum, setTableNum] = useState(null);
+  const [tableNum, setTableNum] = useState(DEFAULT_TABLE_NUM);
+  const [storeId, setStoreId] = useState(DEFAULT_STORE_ID);
   const [selectedDish, setSelectedDish] = useState(null);
   const [cart, setCart] = useState(() => loadCartItemsFromLocalStorage());
 
@@ -51,16 +55,27 @@ export const AppProvider = ({ children }) => {
   }
 
   useEffect(() => {
-    const fetchDishes = async () => {
+    const updateStoreAndFetchDishes = async () => {
+      const queryParams = new URLSearchParams(window.location.search);
+      const tableNumParam = queryParams.get('table_num') || DEFAULT_TABLE_NUM;
+      const storeIdParam = queryParams.get('store_id') || DEFAULT_STORE_ID;
+
+      setTableNum(tableNumParam);
+      setStoreId(storeIdParam);
+
+      await fetchDishes(storeIdParam);
+    };
+
+    const fetchDishes  = async (storeId) => {
       try {
         // Fetch dish types
-        const responseDishTypes = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/dishtype?store_id=store1`);
+        const responseDishTypes = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/dishtype?store_id=${storeId}`);
         const dishTypesData = await responseDishTypes.json();
         // Set dish types
         setDishTypes(dishTypesData);
 
         // Fetch dishes
-        const responseDishes = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/dish?store_id=store1`);
+        const responseDishes = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/dish?store_id=${storeId}`);
         const dishesData = await responseDishes.json();
 
         const formattedDishes = dishesData.map((dish) => ({
@@ -92,13 +107,7 @@ export const AppProvider = ({ children }) => {
       }
     };
 
-    fetchDishes();
-    const queryParams = new URLSearchParams(window.location.search);
-    const tableNumParam = queryParams.get('table_num');
-
-    if (tableNumParam) {
-      setTableNum(tableNumParam);
-    }
+    updateStoreAndFetchDishes();
 
   }, []);
 
@@ -189,6 +198,7 @@ export const AppProvider = ({ children }) => {
 
   const value = {
     tableNum,
+    storeId,
     dishes,
     dishTypes,
     selectedDish,
