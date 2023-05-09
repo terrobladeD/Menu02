@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { BrowserRouter as Router, Route, Routes} from 'react-router-dom';
 import { Container, Navbar } from 'react-bootstrap';
+// import HomeMenuPage from './pages/HomeMenuPage';
 import HomePage from './pages/HomePage';
 import MenuPage from './pages/MenuPage';
 import ShoppingCartPage from './pages/ShoppingCartPage';
@@ -49,8 +50,8 @@ function App() {
         <main style={{ marginTop: '8vh' }}>
           <Container>
             <Routes>
-              <Route exact path="/" element={<HomePage />} />
-              <Route path="/menu" element={<MenuPage />} />
+              <Route exact path="/" element={<HomePage  />} />
+              <Route path="/menu" element={<MenuPage  />} />
               <Route path="/shopping-cart" element={<ShoppingCartPage />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/dishdetail/:id" element={<DishDetailPage/>} />

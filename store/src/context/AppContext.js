@@ -30,6 +30,21 @@ export const AppProvider = ({ children }) => {
   const [storeId, setStoreId] = useState(DEFAULT_STORE_ID);
   const [selectedDish, setSelectedDish] = useState(null);
   const [cart, setCart] = useState(() => loadCartItemsFromLocalStorage());
+  const [storeInfo, setStoreInfo] = useState({});
+
+  const loadStoreInfo = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/storeinfo?store_id=${DEFAULT_STORE_ID}`);
+      const data = await response.json();
+      setStoreInfo(data);
+    } catch (error) {
+      console.error('Failed to fetch store info:', error);
+    }
+  };
+  
+  useEffect(() => {
+    loadStoreInfo();
+  }, []);
 
   useEffect(() => {
     const currentTime = new Date().getTime();
@@ -197,6 +212,7 @@ export const AppProvider = ({ children }) => {
   };
 
   const value = {
+    storeInfo,
     tableNum,
     storeId,
     dishes,

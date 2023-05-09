@@ -1,9 +1,16 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import AppContext from '../context/AppContext';
 
 function Header() {
   const navigate = useNavigate();
-  return <h3 onClick={() => navigate('/')}>UpTop Demo Restaurant</h3>;
+  const { storeInfo } = useContext(AppContext);
+
+  return (
+    <h3 onClick={() => navigate('/')}>
+      {storeInfo ? `${storeInfo.name}` : 'UpTop Demo Restaurant'}
+    </h3>
+  );
 }
 
 export default Header;
