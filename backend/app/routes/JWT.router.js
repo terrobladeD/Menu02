@@ -31,6 +31,11 @@ module.exports = {
 
         app.post('/login', async (req, res) => {
             const { email, password } = req.body;
+            // Validate email and password
+            if (!email || !password) {
+                return res.status(400).json({ message: 'Bad Request' });
+            }
+
             const user = await stores.findOne({ where: { email } });
 
             if (!user) {
@@ -48,7 +53,7 @@ module.exports = {
                 expiresIn: '1d',
             });
 
-            res.json({ token });
+            res.json({ token, storeId: user.id });
         });
 
         // Protected route

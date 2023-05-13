@@ -3,7 +3,7 @@ import { Container, Form, Button, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 
 const LoginPage = ({ setIsAuthenticated }) => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -13,10 +13,10 @@ const LoginPage = ({ setIsAuthenticated }) => {
     setError(null);
 
     try {
-      const response = await fetch('http://localhost:8080/login', {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ email, password }),
       });
 
       if (response.ok) {
@@ -31,6 +31,7 @@ const LoginPage = ({ setIsAuthenticated }) => {
           expirationTime,
         };
         localStorage.setItem('authData', JSON.stringify(authData));
+        localStorage.setItem('storeId', JSON.stringify(data.storeId));
 
         navigate('/');
       } else {
@@ -51,8 +52,8 @@ const LoginPage = ({ setIsAuthenticated }) => {
           <Form.Control
             type="text"
             placeholder="Enter username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
         </Form.Group>
 
@@ -65,7 +66,7 @@ const LoginPage = ({ setIsAuthenticated }) => {
             onChange={(e) => setPassword(e.target.value)}
           />
         </Form.Group>
-        <Button variant="primary" type="submit">
+        <Button variant="primary" type="submit" style={{ marginTop:'16px'}}>
           Login
         </Button>
       </Form>

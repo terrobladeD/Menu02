@@ -101,16 +101,18 @@ exports.createOrder = async (req, res) => {
         return;
     }
 
+    const customiseIds = new Set(req.body.details.flatMap(({ customises }) => customises));
+    //have to make a set to keep the customise unique as one customise may be shown multiple times
+
     // 1.2 check every sub_price
     try {
         await Promise.all([
             ...req.body.details.map(({ dishId }) => Dishes.findByPk(dishId)),
-            ...req.body.details.flatMap(({ customises }) => customises.map(customiseId => Customises.findByPk(customiseId))),
+            ...Array.from(customiseIds).map(customiseId => Customises.findByPk(customiseId)),
         ])
             .then(results => {
                 const dishes = results.slice(0, req.body.details.length);
                 const customises = results.slice(req.body.details.length);
-
                 // Validate sub_price and calculate the sum of all sub_prices
                 let sumSubPrices = 0;
                 req.body.details.forEach((detail, index) => {
@@ -208,9 +210,9 @@ exports.createOrder = async (req, res) => {
     if (order.email) {
         const dishIds = req.body.details.map(detail => detail.dishId);
         const customisesIds = [].concat(...req.body.details.map(detail => detail.customises));
-        const store = await Stores.findByPk( req.query.store_id);
+        const store = await Stores.findByPk(req.query.store_id);
         if (!store) {
-            res.status(404).send({ message: "Store not found with id: " +  req.query.store_id });
+            res.status(404).send({ message: "Store not found with id: " + req.query.store_id });
             return;
         }
         const storeName = store.name;

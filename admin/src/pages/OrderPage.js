@@ -1,62 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, InputGroup, FormControl, Row, Col } from 'react-bootstrap';
-import useWebSocket from 'react-use-websocket';
-const WS_URL = 'ws://localhost:8080';
 
 function OrderPage() {
     const [orders, setOrders] = useState([]);
-    const [dishNames, setDishNames] = useState({});
-    const [dishShortNames, setDishShortNames] = useState({});
-    const [showShortName, setShowShortName] = useState(false);
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-    useWebSocket(WS_URL, {
-        onOpen: () => {
-            console.log('WebSocket connection established.');
-        },
-        onMessage: (event) => {
-            const newMessage = event.data;
-            console.log('WebSocket received a new message:', newMessage);
-            alert('New order has arrived!');
-            fetchOrdersByDate(selectedDate);
-        },
-    });
 
     useEffect(() => {
-        fetchDishNames();
         fetchOrdersByDate(selectedDate);
     }, [selectedDate]);
-
-    const fetchDishNames = async () => {
-        try {
-            const authData = JSON.parse(localStorage.getItem('authData'));
-            const token = authData && authData.token;
-            const response = await fetch('http://localhost:8080/api/dish/all',{
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': token
-                }
-            });
-            const data = await response.json();
-            const dishNameMap = data.reduce((map, dish) => {
-                map[dish.id] = dish.name;
-                return map;
-            }, {});
-            setDishNames(dishNameMap);
-            const dishShortNames = data.reduce((map, dish) => {
-                map[dish.id] = dish.short_name;
-                return map;
-            }, {});
-            setDishShortNames(dishShortNames);
-        } catch (error) {
-            console.error('Error fetching dish names:', error);
-        }
-    };
 
     const fetchOrdersByDate = async (date) => {
         try {
             const authData = JSON.parse(localStorage.getItem('authData'));
+            const storeId = JSON.parse(localStorage.getItem('storeId'));
             const token = authData && authData.token;
-            const response = await fetch(`http://localhost:8080/api/order/bydate/${date}`, {
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/papi/order/bydate/${date}?store_id=${storeId}`, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': token
@@ -82,9 +40,10 @@ function OrderPage() {
     const handleFinishStatus = (order) => {
         const orderId = order.id;
         const authData = JSON.parse(localStorage.getItem('authData'));
+        const storeId = JSON.parse(localStorage.getItem('storeId'));
         const token = authData && authData.token;
         if (!order.status) {
-            fetch(`http://localhost:8080/api/order/status/${orderId}`, {
+            fetch(`${process.env.REACT_APP_API_BASE_URL}/papi/order/status/${orderId}?store_id=${storeId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -107,9 +66,7 @@ function OrderPage() {
                     console.error('Error updating order status:', error);
                 });
         }
-
     };
-
 
     return (
         <div>
@@ -130,13 +87,9 @@ function OrderPage() {
                         <tr>
                             <th>Table Number</th>
                             <th>Order Time</th>
-                            <th>Dish Name
-                                <Button variant="link" style={{ fontSize: '0.8em' }} onClick={() => setShowShortName(!showShortName)}>
-                                    {showShortName ? 'Short' : 'Full'}
-                                </Button>
-                            </th>
-                            <th>Quantity</th>
-                            <th style={{ width: '15vw' }}>Additional Info</th>
+                            <th>Dish Name</th>
+                            <th>Qty</th>
+                            <th>Additional Info</th>
                             <th>Total Price</th>
                             <th>Status</th>
                         </tr>
@@ -144,29 +97,45 @@ function OrderPage() {
                     <tbody>
                         {orders.map((order) => (
                             <React.Fragment key={order.id}>
-                                {order.detail.map((detail, index) => (
-                                    <tr key={detail.id}>
+                                {order.details.map((detail, index) => (
+                                    <tr key={index}>
                                         {index === 0 && (
-                                            <>
-                                                <td rowSpan={order.detail.length}>{order.table_num}</td>
-                                                <td rowSpan={order.detail.length}>{new Date(order.date).toLocaleTimeString()}</td>
-                                            </>
+                                            <React.Fragment>
+                                                <td rowSpan={order.details.length}>{order.table_num}</td>
+                                                <td rowSpan={order.details.length}>{new Date(order.date).toLocaleTimeString()}</td>
+                                            </React.Fragment>
                                         )}
-                                        <td>{showShortName ? dishShortNames[detail.dishId] : dishNames[detail.dishId]}</td>
+                                        <td>
+                                            {detail.dish_name}
+                                            <ul style={{ paddingLeft: '1rem', marginTop: '0.5rem', marginBottom: '0.5rem' }}>
+                                                {detail.customise_names !== "" && (
+
+                                                    detail.customise_names.split(',').map((customise, i) => (
+                                                        <li key={i} style={{ listStyleType: 'disc', margin: '0' }}>
+                                                            {customise.trim()}
+                                                        </li>
+                                                    ))
+                                                )
+                                                }
+                                            </ul>
+                                        </td>
                                         <td>{detail.quantity}</td>
+                                        <td>{detail.additional_info}</td>
                                         {index === 0 && (
-                                            <>
-                                                <td rowSpan={order.detail.length}>{order.additional_info}</td>
-                                                <td rowSpan={order.detail.length}>${order.total_price}</td>
-                                                <td rowSpan={order.detail.length}>
-                                                    <Button
-                                                        variant={order.status ? "success" : "danger"}
-                                                        onClick={() => handleFinishStatus(order)}
-                                                    >
-                                                        {order.status ? 'Finished' : 'Unfinished'}
-                                                    </Button>
+                                            <React.Fragment>
+                                                <td rowSpan={order.details.length}>{order.total_price}</td>
+                                                <td rowSpan={order.details.length}>
+                                                    {order.status ? (
+                                                        <Button variant="success" disabled>
+                                                            Finished
+                                                        </Button>
+                                                    ) : (
+                                                        <Button variant="warning" onClick={() => handleFinishStatus(order)}>
+                                                            Mark as Finished
+                                                        </Button>
+                                                    )}
                                                 </td>
-                                            </>
+                                            </React.Fragment>
                                         )}
                                     </tr>
                                 ))}
@@ -175,9 +144,10 @@ function OrderPage() {
                     </tbody>
                 </Table>
             )}
-            {orders.length === 0 && <h1>You have No order so far</h1>}
+            {orders.length === 0 && <p>No orders found for the selected date.</p>}
         </div>
     );
 }
 
 export default OrderPage;
+
