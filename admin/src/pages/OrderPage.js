@@ -1,20 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, InputGroup, FormControl, Row, Col } from 'react-bootstrap';
+import { Table, Button, InputGroup, FormControl, Row, Col, Pagination } from 'react-bootstrap';
 
 function OrderPage() {
     const [orders, setOrders] = useState([]);
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+    const [limit, setLimit] = useState(10);
+    const [page, setPage] = useState(1);
 
     useEffect(() => {
-        fetchOrdersByDate(selectedDate);
-    }, [selectedDate]);
+        fetchOrdersByDate(selectedDate, page, limit);
+    }, [selectedDate, page, limit]);
 
-    const fetchOrdersByDate = async (date) => {
+    const fetchOrdersByDate = async (date, page, limit) => {
         try {
             const authData = JSON.parse(localStorage.getItem('authData'));
             const storeId = JSON.parse(localStorage.getItem('storeId'));
             const token = authData && authData.token;
-            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/papi/order/bydate/${date}?store_id=${storeId}`, {
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/papi/order/bydate/${date}?store_id=${storeId}&page=${page}&limit=${limit}`, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': token
@@ -35,6 +37,15 @@ function OrderPage() {
 
     const handleDateChange = (e) => {
         setSelectedDate(e.target.value);
+    };
+
+    const handleLimitChange = (e) => {
+        setLimit(parseInt(e.target.value));
+        setPage(1);
+    };
+
+    const handlePageChange = (selectedPage) => {
+        setPage(selectedPage);
     };
 
     const handleFinishStatus = (order) => {
@@ -72,11 +83,27 @@ function OrderPage() {
         <div>
             <h2>Orders by Date</h2>
             <div className="grid-form">
-                <Row>
-                    <Col>
+                <Row className="justify-content-between">
+                    <Col md="auto">
                         <InputGroup className="mb-3">
                             <InputGroup.Text>Select Date</InputGroup.Text>
                             <FormControl type="date" value={selectedDate} onChange={handleDateChange} style={{ maxWidth: '200px' }} />
+                        </InputGroup>
+                    </Col>
+                    <Col md="auto" className="d-flex align-items-center">
+                        <Pagination>
+                            <Pagination.Prev onClick={() => handlePageChange(page - 1)} disabled={page === 1} />
+                            <Pagination.Item>{page}</Pagination.Item>
+                            <Pagination.Next onClick={() => handlePageChange(page + 1)} />
+                        </Pagination>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <InputGroup className="mb-3">
+                            <InputGroup.Text>Limit</InputGroup.Text>
+                            <FormControl as="select" value={limit} onChange={handleLimitChange} style={{ maxWidth: '100px' }}>
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                            </FormControl>
                         </InputGroup>
                     </Col>
                 </Row>
@@ -120,9 +147,10 @@ function OrderPage() {
                                             </ul>
                                         </td>
                                         <td>{detail.quantity}</td>
-                                        <td>{detail.additional_info}</td>
+
                                         {index === 0 && (
                                             <React.Fragment>
+                                                <td rowSpan={order.details.length}>{order.additional_info}</td>
                                                 <td rowSpan={order.details.length}>{order.total_price}</td>
                                                 <td rowSpan={order.details.length}>
                                                     {order.status ? (
