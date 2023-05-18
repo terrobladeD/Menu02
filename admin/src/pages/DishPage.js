@@ -9,35 +9,62 @@ function DishPage() {
   const [selectedDish, setSelectedDish] = useState(null);
   const [sort, setSort] = useState({ field: 'name', order: 'asc' });
   const [showAddDishModal, setShowAddDishModal] = useState(false);
+  // const [dishTypeMap, setDishTypeMap] = useState({});
+
 
 
   useEffect(() => {
-    async function fetchDishes() {
+    async function fetchData() {
       try {
+        const storeId = JSON.parse(localStorage.getItem('storeId'));
         const authData = JSON.parse(localStorage.getItem('authData'));
         const token = authData && authData.token;
 
-        const response = await fetch("http://localhost:8080/api/dish/all", {
+        const dishResponse = fetch(`${process.env.REACT_APP_API_BASE_URL}/papi/dish/all?store_id=${storeId}`, {
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `${token}`,
+            'Authorization': token
           },
         });
 
-        if (!response.ok) {
-          throw new Error('Error fetching dishes');
+        const dishTypeResponse = fetch(`${process.env.REACT_APP_API_BASE_URL}/api/dishtype?store_id=${storeId}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token
+          },
+        });
+
+        const [dishesRes, dishTypesRes] = await Promise.all([dishResponse, dishTypeResponse]);
+
+        if (!dishesRes.ok || !dishTypesRes.ok) {
+          throw new Error('Error fetching data');
         }
 
-        const data = await response.json();
-        setDishes(data);
+        const dishesData = await dishesRes.json();
+        const dishTypesData = await dishTypesRes.json();
+
+        const dishTypeMap = dishTypesData.reduce((map, dishType) => {
+          map[dishType.id] = dishType.type;
+          return map;
+        }, {});
+
+        const updatedDishes = dishesData.map(dish => ({
+          ...dish,
+          type: dishTypeMap[dish.dishtypeId],
+        }));
+
+        setDishes(updatedDishes);
       } catch (error) {
-        console.error('Error fetching dishes:', error);
+        console.error('Error fetching data:', error);
         setDishes([]);
       }
     }
 
-    fetchDishes();
+    fetchData();
   }, []);
+
+
+
 
   const InStockTooltip = (props) => (
     <Tooltip id="sold-out-tooltip" {...props}>
@@ -53,24 +80,26 @@ function DishPage() {
 
   const handleSoldOutToggle = async (dish) => {
     try {
+      const storeId = JSON.parse(localStorage.getItem('storeId'));
       const authData = JSON.parse(localStorage.getItem('authData'));
       const token = authData && authData.token;
-      const response = await fetch(`http://localhost:8080/api/dish/soldout/${dish.id}`, {
+
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/papi/dish/instock/${dish.id}?store_id=${storeId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `${token}`,
+          'Authorization': token
         },
       });
 
       if (response.ok) {
         const updatedDishes = dishes.map((d) => {
           if (d.id === dish.id) {
-            return { ...d, is_sold_out: !d.is_sold_out };
+            return { ...d, is_instock: !d.is_instock };
           }
           return d;
         });
-        if (!dish.is_sold_out) {
+        if (dish.is_instock) {
           alert(`${dish.name} was put sold out`);
         } else {
           alert(`${dish.name} was put in stock`);
@@ -87,13 +116,15 @@ function DishPage() {
 
   const handleValidToggle = async (dish) => {
     try {
+      const storeId = JSON.parse(localStorage.getItem('storeId'));
       const authData = JSON.parse(localStorage.getItem('authData'));
       const token = authData && authData.token;
-      const response = await fetch(`http://localhost:8080/api/dish/valid/${dish.id}`, {
+
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/papi/dish/valid/${dish.id}?store_id=${storeId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `${token}`,
+          'Authorization': token
         },
       });
 
@@ -127,14 +158,15 @@ function DishPage() {
   const handleDeleteClick = async (dish) => {
     if (window.confirm(`Are you sure you want to delete ${dish.name}?`)) {
       try {
+        const storeId = JSON.parse(localStorage.getItem('storeId'));
         const authData = JSON.parse(localStorage.getItem('authData'));
         const token = authData && authData.token;
 
-        const response = await fetch(`http://localhost:8080/api/dish/delete/${dish.id}`, {
+        const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/papi/dish/delete/${dish.id}?store_id=${storeId}`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `${token}`,
+            'Authorization': token,
           },
         });
 
@@ -241,10 +273,10 @@ function DishPage() {
               <td>{dish.price_cur}</td>
               <td>
                 <button
-                  className={`btn btn-${dish.is_sold_out ? "danger" : "success"}`}
+                  className={`btn btn-${!dish.is_instock ? "danger" : "success"}`}
                   onClick={() => handleSoldOutToggle(dish)}
                 >
-                  {!dish.is_sold_out ? "Yes" : "No"}
+                  {dish.is_instock ? "Yes" : "No"}
                 </button>
               </td>
               <td>

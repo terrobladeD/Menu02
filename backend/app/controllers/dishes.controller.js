@@ -91,6 +91,7 @@ exports.getSpecificDishFromStore = (req, res) => {
 // Update the in_stock state of a Dish with id
 exports.updateInStockState = (req, res) => {
     const id = req.params.id;
+    const storeId = req.query.store_id;
 
     Dishes.findOne({
         where: {
@@ -127,6 +128,7 @@ exports.updateInStockState = (req, res) => {
 // Update the valid state of a Dish with id
 exports.updateValidState = (req, res) => {
     const id = req.params.id;
+    const storeId = req.query.store_id;
 
     Dishes.findOne({
         where: {

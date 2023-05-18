@@ -1,15 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, InputGroup, FormControl, Row, Col, Pagination } from 'react-bootstrap';
+import './OrderPage.css';
 
 function OrderPage() {
     const [orders, setOrders] = useState([]);
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
     const [limit, setLimit] = useState(10);
     const [page, setPage] = useState(1);
+    const [totalOrders, setTotalOrders] = useState(0);
 
     useEffect(() => {
+        fetchTotalOrdersByDate(selectedDate);
         fetchOrdersByDate(selectedDate, page, limit);
     }, [selectedDate, page, limit]);
+
+    const fetchTotalOrdersByDate = async (date) => {
+        try {
+            const authData = JSON.parse(localStorage.getItem('authData'));
+            const storeId = JSON.parse(localStorage.getItem('storeId'));
+            const token = authData && authData.token;
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/papi/order/bydate/total/${date}?store_id=${storeId}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token
+                }
+            });
+            const data = await response.json();
+            if (data && data.count) {
+                setTotalOrders(data.count);
+            } else {
+                setTotalOrders(0);
+            }
+        } catch (error) {
+            console.error('Error fetching total orders:', error);
+            setTotalOrders(0);
+        }
+    };
+
 
     const fetchOrdersByDate = async (date, page, limit) => {
         try {
@@ -45,7 +72,10 @@ function OrderPage() {
     };
 
     const handlePageChange = (selectedPage) => {
-        setPage(selectedPage);
+        // Prevent pagination going beyond the total number of pages
+        if (selectedPage <= Math.ceil(totalOrders / limit)) {
+            setPage(selectedPage);
+        }
     };
 
     const handleFinishStatus = (order) => {
@@ -94,7 +124,7 @@ function OrderPage() {
                         <Pagination>
                             <Pagination.Prev onClick={() => handlePageChange(page - 1)} disabled={page === 1} />
                             <Pagination.Item>{page}</Pagination.Item>
-                            <Pagination.Next onClick={() => handlePageChange(page + 1)} />
+                            <Pagination.Next onClick={() => handlePageChange(page + 1)} disabled={page >= Math.ceil(totalOrders / limit)} />
                         </Pagination>
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                         <InputGroup className="mb-3">
@@ -118,7 +148,7 @@ function OrderPage() {
                             <th>Qty</th>
                             <th>Additional Info</th>
                             <th>Total Price</th>
-                            <th>Status</th>
+                            <th className="statusColumn">Status</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -159,7 +189,7 @@ function OrderPage() {
                                                         </Button>
                                                     ) : (
                                                         <Button variant="warning" onClick={() => handleFinishStatus(order)}>
-                                                            Mark as Finished
+                                                            Not Finished
                                                         </Button>
                                                     )}
                                                 </td>
