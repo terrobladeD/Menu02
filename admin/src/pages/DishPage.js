@@ -304,7 +304,7 @@ function DishPage() {
         <>
           <div className="modal-backdrop fade show"></div>
           <div className="modal fade show d-block" role="dialog" tabIndex="-1">
-            <div className="modal-dialog">
+            <div className="modal-dialog"  style={{maxWidth:'900px'}} >
               <div className="modal-content">
                 <div className="modal-header">
                   <h5 className="modal-title">Edit Dish</h5>
