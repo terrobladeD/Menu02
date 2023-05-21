@@ -177,7 +177,7 @@ exports.editDishInfo = async (req, res) => {
     if (req.body.tags) updateData.tags = req.body.tags;
     if (req.body.pict_url) {
         // Validate the pict_url format
-        const urlRegex = /^http:\/\/localhost:8080\/images\/[-\w\s]+\.(png|jpg|jpeg|gif)$/i;
+        const urlRegex = /^http:\/\/localhost:8080\/images\/[-\w+\/]+\.(png|jpg|jpeg|gif)$/i;
         if (urlRegex.test(req.body.pict_url)) {
             updateData.pict_url = req.body.pict_url;
         } else {

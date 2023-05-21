@@ -108,11 +108,12 @@ function DishDetailPage() {
           alt={dish.name}
           style={{
             maxWidth: "100%",
+            minWidth: '100%',
             objectFit: 'cover',
             borderRadius: '8px'
           }}
         />
-        
+
       </div>
       <div className="dish-detail-div">
         {dish.price_ori !== dish.price_cur && (
@@ -170,13 +171,13 @@ function DishDetailPage() {
           </span>
         )}
         {dish.is_instock && (
-            <Button
-              variant="outline-primary"
-              onClick={() => handleAddToCart(dish, selectedCustomises)}
-              style={{ fontSize: '11px' }}
-            >
-              Add to Cart
-            </Button>
+          <Button
+            variant="outline-primary"
+            onClick={() => handleAddToCart(dish, selectedCustomises)}
+            style={{ fontSize: '11px' }}
+          >
+            Add to Cart
+          </Button>
         )}
       </span>
     </div>

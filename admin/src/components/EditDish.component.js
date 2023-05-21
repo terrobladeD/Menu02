@@ -23,9 +23,10 @@ function EditDish(props) {
     const fetchDishTypes = async () => {
       try {
         const authData = JSON.parse(localStorage.getItem('authData'));
+        const storeId = JSON.parse(localStorage.getItem('storeId'));
         const token = authData && authData.token;
 
-        const response = await fetch(`http://localhost:8080/api/dishtype?store_id=store1`, {
+        const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/dishtype?store_id=${storeId}`, {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': token
@@ -83,6 +84,38 @@ function EditDish(props) {
     setCustomises(formattedCustomises);
   }, [props.dish.customises]);
 
+  //format the custmoise into the way that database known
+  const unformatCustomises = (formattedCustomises) => {
+    const unformattedCustomises = [];
+    const metaSeqMap = {};
+
+    formattedCustomises.forEach((customise) => {
+      const { name: meta_name, minChoice, maxChoice, choices } = customise;
+
+      if (!metaSeqMap[meta_name]) {
+        // if this meta_name does not exist in the map, add it with initial seq as 1
+        metaSeqMap[meta_name] = 1;
+      } else {
+        // if this meta_name exists in the map, increase its seq
+        metaSeqMap[meta_name] += 1;
+      }
+
+      choices.forEach((choice) => {
+        unformattedCustomises.push({
+          meta_name,
+          meta_seq: metaSeqMap[meta_name].toString(),
+          meta_min_tk: minChoice,
+          meta_max_tk: maxChoice,
+          name: choice.name,
+          price: choice.priceChange,
+        });
+      });
+    });
+
+    return unformattedCustomises;
+  };
+
+
 
   const handleEditClick = async (e) => {
     e.preventDefault();
@@ -91,6 +124,8 @@ function EditDish(props) {
       alert("Please upload image at first");
       return;
     }
+
+    const unformattedCustomises = unformatCustomises(customises);
 
     // Prepare the updated dish data
     const updatedDish = {
@@ -102,13 +137,14 @@ function EditDish(props) {
       price_cur,
       dishtypeId,
       pict_url,
-      customises
+      customises: unformattedCustomises
     };
 
     try {
       const authData = JSON.parse(localStorage.getItem('authData'));
+      const storeId = JSON.parse(localStorage.getItem('storeId'));
       const token = authData && authData.token;
-      const response = await fetch(`http://localhost:8080/api/dish/edit/${props.dish.id}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/papi/dish/edit/${props.dish.id}?store_id=${storeId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -134,7 +170,16 @@ function EditDish(props) {
   // Function to handle file input change
   const handleImageChange = (e) => {
     setImageFile(e.target.files[0]);
-    setPictUrl(URL.createObjectURL(e.target.files[0]));
+
+    // Revoke the old URL if it exists
+    if (pict_url) {
+      URL.revokeObjectURL(pict_url);
+    }
+
+    // Create a new URL
+    const newUrl = URL.createObjectURL(e.target.files[0]);
+
+    setPictUrl(newUrl);
   };
 
   // Function to call the backend API for image upload (left empty)
@@ -147,12 +192,11 @@ function EditDish(props) {
     try {
       const formData = new FormData();
       formData.append("image", imageFile);
-      formData.append("name", name);
 
       const authData = JSON.parse(localStorage.getItem("authData"));
       const token = authData && authData.token;
 
-      const response = await fetch("http://localhost:8080/images/upload", {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/images/upload`, {
         method: "POST",
         headers: {
           Authorization: token,
@@ -161,8 +205,11 @@ function EditDish(props) {
       });
 
       if (response.ok) {
+        if (pict_url) {
+          URL.revokeObjectURL(pict_url);
+        }
         const data = await response.json();
-        const imageUrl = `http://localhost:8080/images/${data.imageName}`;
+        const imageUrl = `${process.env.REACT_APP_API_BASE_URL}/images/${data.imagePath}`;
         setPictUrl(imageUrl);
         alert("Picture update successful");
         setImageFile(null);
@@ -213,7 +260,7 @@ function EditDish(props) {
                     className="form-control col-9"
                     id="price_ori"
                     value={price_ori}
-                    onChange={(e) => setPriceOri(e.target.value)}
+                    onChange={(e) => setPriceOri(Number(e.target.value))}
                   />
                 </div>
 
@@ -224,7 +271,7 @@ function EditDish(props) {
                     className="form-control col-9"
                     id="price_cur"
                     value={price_cur}
-                    onChange={(e) => setPriceCur(e.target.value)}
+                    onChange={(e) => setPriceCur(Number(e.target.value))}
                   />
                 </div>
 
@@ -234,7 +281,7 @@ function EditDish(props) {
                     className="form-control col-9"
                     id="type"
                     value={dishtypeId}
-                    onChange={(e) => setDishtypeId(e.target.value)}
+                    onChange={(e) => setDishtypeId(Number(e.target.value))}
                   >
                     {dishTypes.map(dishType => (
                       <option key={dishType.id} value={dishType.id}>
