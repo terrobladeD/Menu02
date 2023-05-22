@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const path = require('path');
 const http = require('http');
-// const websocket = require('./app/others/websocket');
+const websocket = require('./app/others/websocket');
 const app = express();
 
 // only allow specific ports to query the server
@@ -48,8 +48,8 @@ const PORT = process.env.PORT || 8080;
 // Create an HTTP server with the Express app
 const server = http.createServer(app);
 
-// // Set up the WebSocket server using the HTTP server
-// websocket.setupWebSocketServer(server);
+// Set up the WebSocket server using the HTTP server
+websocket.setupWebSocketServer(server);
 
 // //email sender
 // const emailRoutes = require('./app/routes/emailRoutes');

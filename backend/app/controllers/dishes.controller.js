@@ -264,7 +264,7 @@ exports.addDish = async (req, res) => {
     }
 
     // Validate pict_url format
-    const urlRegex = /^http:\/\/localhost:8080\/images\/[-\w\s]+\.(png|jpg|jpeg|gif)$/i;
+    const urlRegex = /^http:\/\/localhost:8080\/images\/[-\w+\/]+\.(png|jpg|jpeg|gif)$/i;
     if (!urlRegex.test(req.body.pict_url)) {
         return res.status(400).send({
             message: `Invalid pict_url format. The provided URL does not match the expected format.`,

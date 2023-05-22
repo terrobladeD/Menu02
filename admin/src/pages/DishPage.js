@@ -222,7 +222,7 @@ function DishPage() {
 
       {showAddDishModal && (
         <div className="modal" style={{ display: 'block' }}>
-          <div className="modal-dialog">
+          <div className="modal-dialog"  style={{maxWidth:'900px'}}>
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">Add New Dish</h5>

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, InputGroup, FormControl, Row, Col, Pagination } from 'react-bootstrap';
 import './OrderPage.css';
+import useWebSocket from 'react-use-websocket';
+const WS_URL = 'ws://localhost:8080';
 
 function OrderPage() {
     const [orders, setOrders] = useState([]);
@@ -8,6 +10,18 @@ function OrderPage() {
     const [limit, setLimit] = useState(10);
     const [page, setPage] = useState(1);
     const [totalOrders, setTotalOrders] = useState(0);
+
+    useWebSocket(WS_URL, {
+        onOpen: () => {
+            console.log('WebSocket connection established.');
+        },
+        onMessage: (event) => {
+            const newMessage = event.data;
+            console.log('WebSocket received a new message:', newMessage);
+            alert('New order has arrived!');
+            fetchOrdersByDate(selectedDate);
+        },
+    });
 
     useEffect(() => {
         fetchTotalOrdersByDate(selectedDate);
