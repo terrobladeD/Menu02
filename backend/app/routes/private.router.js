@@ -34,6 +34,9 @@ router.get("/order/bydate/total/:date", authenticateJWT, orders.getOrdersCountBy
 // Get a basic order summary for a store
 router.get("/order/summary", authenticateJWT, orders.getBasicOrderSummary);
 
+// Get a monthly order summary for a store
+router.get("/order/monthlysummary", authenticateJWT, orders.getMonthlyOrderSummary);
+
 // Retrieve a single Order with id
 router.get("/order/:id", authenticateJWT, orders.getOrderById);
 

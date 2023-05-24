@@ -1,4 +1,5 @@
 const { Op, or } = require('sequelize');
+const sequelize = require('sequelize');
 const sendOrderEmail = require('../others/orderEmailSender')
 const websocket = require('../others/websocket');
 const db = require("../models");
@@ -378,6 +379,56 @@ exports.getBasicOrderSummary = async (req, res) => {
         });
     }
 };
+//get the order summary for the past 30 days
+exports.getMonthlyOrderSummary = async (req, res) => {
+    try {
+        const storeId = req.query.store_id;
+
+        if (!storeId) {
+            res.status(400).send({
+                message: "Missing storeId in the query parameters."
+            });
+            return;
+        }
+
+        // Get date 30 days ago
+        const date = new Date();
+        date.setDate(date.getDate() - 30);
+
+        const orders = await Orders.findAll({ 
+            where: { 
+                storeId: storeId,
+                createdAt: { // Assuming you have a createdAt column in your Orders table
+                    [Op.gte]: date,
+                }
+            },
+            attributes: [
+                [sequelize.fn('date', sequelize.col('createdAt')), 'date'],
+                [sequelize.fn('sum', sequelize.col('total_price')), 'total_price'],
+                [sequelize.fn('count', sequelize.col('total_price')), 'total_orders'],
+            ],
+            group: [sequelize.fn('date', sequelize.col('createdAt'))],
+            order: [sequelize.fn('date', sequelize.col('createdAt'))],
+        });
+
+        let summary = {
+            total_open_days: orders.length,
+            total_revenue: 0,
+            daily_summary: orders,
+        };
+
+        orders.forEach(order => {
+            summary.total_revenue += order.total_price;
+        });
+
+        res.status(200).send(summary);
+    } catch (error) {
+        res.status(500).send({
+            message: error.message || "An error occurred while fetching the order summary."
+        });
+    }
+};
+
 // Retrieve a single Order with id
 exports.getOrderById = async (req, res) => {
     try {
@@ -410,7 +461,7 @@ exports.getOrderById = async (req, res) => {
         });
     }
 };
-// Make an order finished
+// Mark an order finished
 exports.updateOrderStatus = async (req, res) => {
     try {
         const id = req.params.id;
