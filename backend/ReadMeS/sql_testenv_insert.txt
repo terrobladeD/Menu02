@@ -1,0 +1,65 @@
+-- Insert stores
+INSERT INTO `stores` (`id`, `name`, `start_date`, `contract_length`, `top_pict_link`, `description`, `email`, `password`, `createdAt`, `updatedAt`)
+VALUES ('store1', 'Fast Food One', '2022-01-01 00:00:00', 12, 'tbd', 'A great fast food store', 'store1@example.com', 'store1password', NOW(), NOW()),
+       ('store2', 'Dessert Two', '2022-01-15 00:00:00', 12, 'tbd', 'A fantastic dessert store', 'store2@example.com', 'store2password', NOW(), NOW());
+
+-- Insert dishtypes
+INSERT INTO `dishtypes` (`id`, `type`, `type_seq`, `createdAt`, `updatedAt`, `storeId`)
+VALUES (1, 'Burger', 1, NOW(), NOW(), 'store1'),
+       (2, 'Pizza', 2, NOW(), NOW(), 'store1'),
+       (3, 'Sandwich', 3, NOW(), NOW(), 'store1'),
+       (4, 'Drinks', 4, NOW(), NOW(), 'store1'),
+       (5, 'Cake', 1, NOW(), NOW(), 'store2'),
+       (6, 'Ice Cream', 2, NOW(), NOW(), 'store2'),
+       (7, 'Drinks', 3, NOW(), NOW(), 'store2');
+
+-- Insert dishes
+INSERT INTO `dishes` (`id`, `name`, `short_name`, `description`, `full_description`, `price_ori`, `price_cur`, `is_instock`, `is_valid`, `pict_url`, `tags`, `createdAt`, `updatedAt`, `storeId`, `dishtypeId`)
+VALUES 
+-- Store 1 dishes
+(1, 'Cheese Burger', 'CB', 'Cheese Burger', 'Delicious cheese burger', 10, 10, 1, 1, 'tbc', 1, NOW(), NOW(), 'store1', 1),
+(2, 'Chicken Burger', 'CHB', 'Chicken Burger', 'Grilled chicken burger', 9, 9, 1, 1, 'tbc', 1, NOW(), NOW(), 'store1', 1),
+(3, 'Veggie Burger', 'VB', 'Veggie Burger', 'Healthy veggie burger', 8, 8, 1, 1, 'tbc', 1, NOW(), NOW(), 'store1', 1),
+(4, 'Pepperoni Pizza', 'PP', 'Pepperoni Pizza', 'Delicious pepperoni pizza', 12, 12, 1, 1, 'tbc', 1, NOW(), NOW(), 'store1', 2),
+(5, 'Vegetarian Pizza', 'VP', 'Vegetarian Pizza', 'Fresh vegetarian pizza', 11, 11, 1, 1, 'tbc', 1, NOW(), NOW(), 'store1', 2),
+(6, 'BBQ Chicken Pizza', 'BCP', 'BBQ Chicken Pizza', 'BBQ chicken pizza', 12, 12, 1, 1, 'tbc', 1, NOW(), NOW(), 'store1', 2),
+(7, 'Ham Sandwich', 'HS', 'Ham Sandwich', 'Tasty ham sandwich', 8, 8, 1, 1, 'tbc', 1, NOW(), NOW(), 'store1', 3),
+(8, 'Turkey Sandwich', 'TS', 'Turkey Sandwich', 'Delicious turkey sandwich', 8, 8, 1, 1, 'tbc', 1, NOW(), NOW(), 'store1', 3),
+(9, 'Vegetarian Sandwich', 'VS', 'Vegetarian Sandwich', 'Healthy vegetarian sandwich', 7, 7, 1, 1, 'tbc', 1, NOW(), NOW(), 'store1', 3),
+(10, 'Coke', 'C', 'Coke', 'Refreshing coke', 2, 2, 1, 1, 'tbc', 1, NOW(), NOW(), 'store1', 4),
+(11, 'Sprite', 'S', 'Sprite', 'Refreshing sprite', 2, 2, 1, 1, 'tbc', 1, NOW(), NOW(), 'store1', 4),
+(12, 'Water', 'W', 'Water', 'Pure water', 1, 1, 1, 1, 'tbc', 1, NOW(), NOW(), 'store1', 4),
+
+-- Store 2 dishes
+(13, 'Chocolate Cake', 'CC', 'Chocolate Cake', 'Rich and moist chocolate cake', 6, 6, 1, 1, 'tbc', 1, NOW(), NOW(), 'store2', 5),
+(14, 'Strawberry Cake', 'SC', 'Strawberry Cake', 'Fresh strawberry cake', 6, 6, 1, 1, 'tbc', 1, NOW(), NOW(), 'store2', 5),
+(15, 'Cheese Cake', 'CHC', 'Cheese Cake', 'Delicious cheese cake', 6, 6, 1, 1, 'tbc', 1, NOW(), NOW(), 'store2', 5),
+(16, 'Vanilla Ice Cream', 'VIC', 'Vanilla Ice Cream', 'Creamy vanilla ice cream', 5, 5, 1, 1, 'tbc', 1, NOW(), NOW(), 'store2', 6),
+(17, 'Chocolate Ice Cream', 'CIC', 'Chocolate Ice Cream', 'Rich chocolate ice cream', 5, 5, 1, 1, 'tbc', 1, NOW(), NOW(), 'store2', 6),
+(18, 'Strawberry Ice Cream', 'SIC', 'Strawberry Ice Cream', 'Fresh strawberry ice cream', 5, 5, 1, 1, 'tbc', 1, NOW(), NOW(), 'store2', 6),
+(19, 'Apple Pie', 'AP', 'Apple Pie', 'Warm apple pie', 5, 5, 1, 1, 'tbc', 1, NOW(), NOW(), 'store2', 7),
+(20, 'Pumpkin Pie', 'PP', 'Pumpkin Pie', 'Seasonal pumpkin pie', 5, 5, 1, 1, 'tbc', 1, NOW(), NOW(), 'store2', 7),
+(21, 'Pecan Pie', 'PEC', 'Pecan Pie', 'Delicious pecan pie', 6, 6, 1, 1, 'tbc', 1, NOW(), NOW(), 'store2', 7),
+(22, 'Chocolate Drink', 'CD', 'Chocolate Drink', 'Hot chocolate drink', 3, 3, 1, 1, 'tbc', 1, NOW(), NOW(), 'store2', 8),
+(23, 'Milk', 'M', 'Milk', 'Fresh milk', 2, 2, 1, 1, 'tbc', 1, NOW(), NOW(), 'store2', 8),
+(24, 'Water', 'W', 'Water', 'Pure water', 1, 1, 1, 1, 'tbc', 1, NOW(), NOW(), 'store2', 8);
+
+-- Insert customises
+INSERT INTO `customises` (`id`, `meta_name`, `meta_seq`, `meta_min_tk`, `meta_max_tk`, `name`, `price`, `createdAt`, `updatedAt`, `dishId`)
+VALUES 
+-- Store 1 customises
+(1, 'Toppings', '1', 0, 3, 'Extra Cheese', 1, NOW(), NOW(), 1), -- Multiple choice customise
+(2, 'Toppings', '1', 0, 3, 'Bacon', 2, NOW(), NOW(), 1), 
+(3, 'Toppings', '1', 0, 3, 'Tomato', 0, NOW(), NOW(), 1), -- Free of charge customise
+(4, 'Sauces', '1', 1, 3, 'Mayo', 1, NOW(), NOW(), 2),
+(5, 'Sauces', '1', 1, 3, 'BBQ Sauce', 1, NOW(), NOW(), 2),
+(6, 'Sauces', '1', 1, 3, 'No Sauce', 0, NOW(), NOW(), 2), -- Free of charge customise
+(7, 'Extra', '1', 0, 2, 'Extra Pepperoni', 2, NOW(), NOW(), 4), -- Multiple choice customise
+(8, 'Extra', '1', 0, 2, 'Extra Cheese', 1, NOW(), NOW(), 4), 
+
+-- Store 2 customises
+(9, 'Toppings', '1', 0, 2, 'Whipped Cream', 1, NOW(), NOW(), 13), -- Multiple choice customise
+(10, 'Toppings', '1', 0, 2, 'Cherry', 0, NOW(), NOW(), 13), -- Free of charge customise
+(11, 'Toppings', '1', 0, 2, 'Extra Chocolate', 1, NOW(), NOW(), 16),
+(12, 'Toppings', '1', 0, 2, 'Nuts', 1, NOW(), NOW(), 16),
+(13, 'Toppings', '1', 0, 2, 'No Toppings', 0, NOW(), NOW(), 16); -- Free of charge customise

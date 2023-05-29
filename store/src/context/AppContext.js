@@ -32,19 +32,19 @@ export const AppProvider = ({ children }) => {
   const [cart, setCart] = useState(() => loadCartItemsFromLocalStorage());
   const [storeInfo, setStoreInfo] = useState({});
 
-  const loadStoreInfo = async () => {
-    try {
-      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/storeinfo?store_id=${DEFAULT_STORE_ID}`);
-      const data = await response.json();
-      setStoreInfo(data);
-    } catch (error) {
-      console.error('Failed to fetch store info:', error);
-    }
-  };
-  
-  useEffect(() => {
-    loadStoreInfo();
-  }, []);
+  // const loadStoreInfo = async () => {
+  //   try {
+  //     const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/storeinfo?store_id=${DEFAULT_STORE_ID}`);
+  //     const data = await response.json();
+  //     setStoreInfo(data);
+  //   } catch (error) {
+  //     console.error('Failed to fetch store info:', error);
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   loadStoreInfo();
+  // }, []);
 
   useEffect(() => {
     const currentTime = new Date().getTime();
@@ -72,8 +72,31 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     const updateStoreAndFetchDishes = async () => {
       const queryParams = new URLSearchParams(window.location.search);
-      const tableNumParam = queryParams.get('table_num') || DEFAULT_TABLE_NUM;
-      const storeIdParam = queryParams.get('store_id') || DEFAULT_STORE_ID;
+      let tableNumParam = queryParams.get('table_num');
+      let storeIdParam = queryParams.get('store_id');
+
+      if (localStorage.getItem('storeId') && localStorage.getItem('storeId') !== storeIdParam) {
+        // If the storeIdParam from the query or default differs from the localStorage one, clear the cart
+        setCart([]);
+      }
+
+      // If the query parameters do not exist, use localStorage
+      if (!tableNumParam) {
+        tableNumParam = localStorage.getItem('tableNum') || DEFAULT_TABLE_NUM;
+      } else {
+        // If the query parameters exist, store them in localStorage
+        localStorage.setItem('tableNum', tableNumParam);
+      }
+
+      if (!storeIdParam) {
+        storeIdParam = localStorage.getItem('storeId') || DEFAULT_STORE_ID;
+      } else {
+        localStorage.setItem('storeId', storeIdParam);
+      }
+
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/storeinfo?store_id=${storeIdParam}`);
+      const data = await response.json();
+      setStoreInfo(data);
 
       setTableNum(tableNumParam);
       setStoreId(storeIdParam);
@@ -81,7 +104,7 @@ export const AppProvider = ({ children }) => {
       await fetchDishes(storeIdParam);
     };
 
-    const fetchDishes  = async (storeId) => {
+    const fetchDishes = async (storeId) => {
       try {
         // Fetch dish types
         const responseDishTypes = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/dishtype?store_id=${storeId}`);

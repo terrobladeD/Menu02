@@ -7,7 +7,7 @@ const app = express();
 
 // only allow specific ports to query the server
 var corsOptions = {
-  origin: ["http://localhost:8081", "http://localhost:8082"]
+  origin: ["http://localhost:8081", "http://localhost:8082","http://13.211.128.59/"]
 };
 app.use(cors(corsOptions));
 

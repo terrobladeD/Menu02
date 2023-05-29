@@ -1,7 +1,7 @@
 -- Insert stores
 INSERT INTO `stores` (`id`, `name`, `start_date`, `contract_length`, `top_pict_link`, `description`, `email`, `password`, `createdAt`, `updatedAt`)
-VALUES ('store1', 'Store One', '2022-01-01 00:00:00', 12, 'https://example.com/store1.jpg', 'A great store with delicious food', 'store1@example.com', 'store1password', NOW(), NOW()),
-       ('store2', 'Store Two', '2022-01-15 00:00:00', 12, 'https://example.com/store2.jpg', 'A fantastic store with tasty meals', 'store2@example.com', 'store2password', NOW(), NOW());
+VALUES ('store1', 'Store One', '2022-01-01 00:00:00', 12, 'tbd', 'A great store with delicious food', 'store1@example.com', 'store1password', NOW(), NOW()),
+       ('store2', 'Store Two', '2022-01-15 00:00:00', 12, 'tbd', 'A fantastic store with tasty meals', 'store2@example.com', 'store2password', NOW(), NOW());
 
 -- Insert dishtypes
 INSERT INTO `dishtypes` (`id`, `type`, `type_seq`, `createdAt`, `updatedAt`, `storeId`)
